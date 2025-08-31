@@ -1,0 +1,13 @@
+# Dependencies
+node_modules
+
+# Build directory
+.next
+
+# Lockfiles
+package-lock.json
+bun.lockb
+pnpm-lock.yaml
+
+# Environment variables
+.env.local
