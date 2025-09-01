@@ -10,7 +10,7 @@ export async function GET() {
     // Debug logging
     console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
     console.log("Attempting to connect to database...");
-
+    
     const allUsers = await db.select().from(users);
     
     console.log("Successfully fetched users:", allUsers.length);
