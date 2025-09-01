@@ -1,45 +1,44 @@
 import { NextResponse } from 'next/server';
+import { db } from '@/db/drizzle';
+import { users } from '@/db/schema';
 
 export async function GET() {
   try {
-    // Add comprehensive error handling
-    console.log('API /users called');
-    
-    // Check environment variables
+    // ตรวจสอบ environment variable
     if (!process.env.DATABASE_URL) {
-      console.error('DATABASE_URL not found');
       return NextResponse.json(
-        { error: 'Database configuration missing' }, 
+        { error: 'Database configuration missing' },
         { status: 500 }
       );
     }
 
-    // Mock data for testing (replace with actual database call)
-    const users = [
-      { id: 1, name: 'John Doe', email: 'john@example.com' },
-      { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
-    ];
-
-    // If using database, wrap in try-catch
-    // const users = await prisma.user.findMany();
-    // or
-    // const users = await db.collection('users').find().toArray();
+    // ดึงข้อมูล users จากฐานข้อมูล
+    const usersData = await db.select().from(users);
 
     return NextResponse.json({
       success: true,
-      data: users,
+      data: usersData,
+      count: usersData.length,
       timestamp: new Date().toISOString()
     });
+  } catch (error: any) {
+    // ตรวจสอบประเภท error
+    const isDbError =
+      error?.message?.includes('connect') ||
+      error?.message?.includes('timeout');
 
-  } catch (error) {
-    console.error('API Error:', error);
-    
     return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
-      }, 
-      { status: 500 }
+      {
+        error: isDbError
+          ? 'Database connection failed'
+          : 'Internal server error',
+        message:
+          process.env.NODE_ENV === 'development'
+            ? error.message
+            : 'Something went wrong',
+        timestamp: new Date().toISOString()
+      },
+      { status: isDbError ? 503 : 500 }
     );
   }
 }
