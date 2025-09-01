@@ -8,6 +8,13 @@
       "when": 1756700598491,
       "tag": "0000_boring_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1756741655900,
+      "tag": "0001_foamy_natasha_romanoff",
+      "breakpoints": true
     }
   ]
 }
