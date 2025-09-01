@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/db/drizzle";
-import { users } from "@/db/schema";
+import { apitest } from "@/db/schema";
 import { unstable_noStore as noStore } from 'next/cache';
 
 export async function GET() {
@@ -11,7 +11,7 @@ export async function GET() {
     console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
     console.log("Attempting to connect to database...");
 
-    const allUsers = await db.select().from(users);
+    const allUsers = await db.select().from(apitest);
     
     console.log("Successfully fetched users:", allUsers.length);
 

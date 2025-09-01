@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1756695495192,
-      "tag": "0000_eager_wonder_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1756696353036,
-      "tag": "0001_absurd_queen_noir",
+      "when": 1756700598491,
+      "tag": "0000_boring_sentinel",
       "breakpoints": true
     }
   ]
