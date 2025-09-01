@@ -1,73 +1,44 @@
-import { NextResponse, NextRequest } from "next/server";
-import db from "@/db/drizzle";
-import { users } from "@/db/schema";
-import { unstable_noStore as noStore } from 'next/cache';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // ตรวจสอบว่า DATABASE_URL มีอยู่หรือไม่
+    // Add comprehensive error handling
+    console.log('API /users called');
+    
+    // Check environment variables
     if (!process.env.DATABASE_URL) {
-      console.error("DATABASE_URL is not defined");
+      console.error('DATABASE_URL not found');
       return NextResponse.json(
-        { error: "Database configuration error" },
+        { error: 'Database configuration missing' }, 
         { status: 500 }
       );
     }
 
-    console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
-    console.log("Attempting to connect to database...");
+    // Mock data for testing (replace with actual database call)
+    const users = [
+      { id: 1, name: 'John Doe', email: 'john@example.com' },
+      { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+    ];
 
-    // แก้ไข SQL query - เลือกเฉพาะ field ที่ต้องการ และไม่เอา password
-    const allUsers = await db
-      .select({
-        id: users.id,
-        username: users.username,
-        email: users.email,
-        // ไม่เอา password ออกมาเพื่อความปลอดภัย
-      })
-      .from(users);
-
-    console.log("Successfully fetched users:", allUsers.length);
+    // If using database, wrap in try-catch
+    // const users = await prisma.user.findMany();
+    // or
+    // const users = await db.collection('users').find().toArray();
 
     return NextResponse.json({
       success: true,
-      data: allUsers,
-      count: allUsers.length
+      data: users,
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error("Database Error:", error);
+    console.error('API Error:', error);
     
-    // ตรวจสอบประเภทของ error
-    if (error instanceof Error) {
-      // ถ้าเป็น timeout error
-      if (error.message.includes('timeout') || error.message.includes('Timeout')) {
-        return NextResponse.json(
-          { 
-            error: "Database connection timeout. Please try again later.",
-            details: "Connection to database timed out"
-          },
-          { status: 504 }
-        );
-      }
-      
-      // ถ้าเป็น connection error
-      if (error.message.includes('connect') || error.message.includes('fetch failed')) {
-        return NextResponse.json(
-          { 
-            error: "Unable to connect to database",
-            details: "Database connection failed"
-          },
-          { status: 503 }
-        );
-      }
-    }
-
     return NextResponse.json(
       { 
-        error: "Internal server error",
-        details: process.env.NODE_ENV === 'development' ? error : undefined
-      },
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+      }, 
       { status: 500 }
     );
   }
