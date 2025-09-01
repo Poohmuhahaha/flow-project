@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow"
+      ]
+    }
+  }
+}
