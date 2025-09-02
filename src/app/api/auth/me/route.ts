@@ -1,6 +1,6 @@
 // app/api/auth/me/route.ts - Updated imports  
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionByToken } from '@/lib/db/auth-db/auth-queries-updated';
+import { getSessionByToken } from '@/lib/db/auth-db/auth-queries';
 import { getSessionFromRequest } from '@/lib/db/auth-db/auth-utils-edge';
 
 export async function GET(request: NextRequest) {

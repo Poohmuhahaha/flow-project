@@ -1,6 +1,6 @@
 // lib/auth-server.ts - Server-side auth utilities (Fixed)
 import { cookies } from 'next/headers';
-import { getSessionByToken } from '@/lib/db/auth-db/auth-queries-updated';
+import { getSessionByToken } from '@/lib/db/auth-db/auth-queries';
 
 export async function getCurrentUser() {
   try {

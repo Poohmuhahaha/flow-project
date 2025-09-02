@@ -1,6 +1,6 @@
 // app/api/auth/register/route.ts - Updated imports
 import { NextRequest, NextResponse } from 'next/server';
-import { createUser, getUserByEmail } from '@/lib/db/auth-db/auth-queries-updated';
+import { createUser, getUserByEmail } from '@/lib/db/auth-db/auth-queries';
 import { isValidEmail, isValidPassword } from '@/lib/db/auth-db/auth-utils-server';
 
 export async function POST(request: NextRequest) {

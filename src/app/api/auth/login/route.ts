@@ -1,7 +1,7 @@
 
 // app/api/auth/login/route.ts - Fixed with await
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail, createSession, updateUserLastLogin } from '@/lib/db/auth-db/auth-queries-updated';
+import { getUserByEmail, createSession, updateUserLastLogin } from '@/lib/db/auth-db/auth-queries';
 import { verifyPassword, setSessionCookie } from '@/lib/db/auth-db/auth-utils-server';
 import { getClientIP, getUserAgent } from '@/lib/db/auth-db/auth-utils-edge';
 
