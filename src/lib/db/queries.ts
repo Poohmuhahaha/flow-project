@@ -1,5 +1,6 @@
+// lib/db/queries.ts
 import { eq, desc, and, gte, lte } from 'drizzle-orm';
-import { db } from './drizzle';
+import { db } from './index';
 import { users, apiKeys, usageLogs } from './schema';
 import crypto from 'crypto';
 
