@@ -1,6 +1,6 @@
 // app/api/gis/analyze/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateApiKey, checkCredits } from '@/lib/auth';
+import { authenticateApiKey, checkCredits } from '@/lib/db/auth-db/auth';
 import { GISProcessor } from '@/lib/gis-processor';
 import { createUsageLog, updateUserCredits } from '@/lib/db/queries';
 

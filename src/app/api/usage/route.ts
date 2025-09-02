@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateApiKey } from '@/lib/auth';
+import { authenticateApiKey } from '@/lib/db/auth-db/auth';
 import { getUserUsage } from '@/lib/db/queries';
 
 export async function GET(request: NextRequest) {

@@ -1,6 +1,6 @@
 // middleware.ts - Edge Runtime compatible
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionFromRequest } from '@/lib/auth-utils-edge';
+import { getSessionFromRequest } from '@/lib/db/auth-db/auth-utils-edge';
 
 // Protected routes ที่ต้อง login
 const protectedRoutes = [

@@ -1,8 +1,8 @@
 // app/api/auth/logout/route.ts - Fixed with await
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteSession } from '@/lib/auth-queries-updated';
-import { clearSessionCookie } from '@/lib/auth-utils-server';
-import { getSessionFromRequest } from '@/lib/auth-utils-edge';
+import { deleteSession } from '@/lib/db/auth-db/auth-queries-updated';
+import { clearSessionCookie } from '@/lib/db/auth-db/auth-utils-server';
+import { getSessionFromRequest } from '@/lib/db/auth-db/auth-utils-edge';
 
 export async function POST(request: NextRequest) {
   try {

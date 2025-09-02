@@ -1,8 +1,8 @@
-// lib/auth-queries-updated.ts - Fixed date issues
-import { eq, and, gt, sql } from 'drizzle-orm';
-import { db } from './db/index';
-import { users, sessions, passwordResetTokens } from './db/schema';
-import { hashPassword, generateSecureTokenServer } from '@/lib/auth-utils-server';
+// lib/db/auth-queries.ts - Fixed version
+import { eq, and, gt, lt } from 'drizzle-orm';
+import { db } from '../index';
+import { users, sessions, passwordResetTokens } from '../schema';
+import { hashPassword, generateSecureToken } from '@/lib/db/auth-db/auth-utils';
 
 // User Management
 export async function createUser(userData: {
@@ -48,17 +48,19 @@ export async function getUserById(id: string) {
 }
 
 export async function updateUserLastLogin(userId: string) {
-  const now = new Date();
+  const currentDate = new Date();
+  
   await db
     .update(users)
-    .set({ updatedAt: now })
+    .set({ updatedAt: currentDate })
     .where(eq(users.id, userId));
 }
 
 // Session Management
 export async function createSession(userId: string, userAgent?: string, ipAddress?: string) {
-  const token = generateSecureTokenServer();
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const token = generateSecureToken();
+  const currentDate = new Date();
+  const expiresAt = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
   
   const session = await db.insert(sessions).values({
     userId,
@@ -72,7 +74,7 @@ export async function createSession(userId: string, userAgent?: string, ipAddres
 }
 
 export async function getSessionByToken(token: string) {
-  const now = new Date();
+  const currentDate = new Date();
   
   const result = await db
     .select({
@@ -92,7 +94,7 @@ export async function getSessionByToken(token: string) {
     .innerJoin(users, eq(sessions.userId, users.id))
     .where(and(
       eq(sessions.token, token),
-      gt(sessions.expiresAt, now),
+      gt(sessions.expiresAt, currentDate),
       eq(users.isActive, true)
     ))
     .limit(1);
@@ -109,14 +111,15 @@ export async function deleteAllUserSessions(userId: string) {
 }
 
 export async function cleanupExpiredSessions() {
-  const now = new Date();
-  await db.delete(sessions).where(gt(now, sessions.expiresAt));
+  const currentDate = new Date();
+  await db.delete(sessions).where(lt(sessions.expiresAt, currentDate));
 }
 
 // Password Reset
 export async function createPasswordResetToken(userId: string) {
-  const token = generateSecureTokenServer();
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  const token = generateSecureToken();
+  const currentDate = new Date();
+  const expiresAt = new Date(currentDate.getTime() + 60 * 60 * 1000); // 1 hour
   
   const resetToken = await db.insert(passwordResetTokens).values({
     userId,
@@ -128,7 +131,7 @@ export async function createPasswordResetToken(userId: string) {
 }
 
 export async function getPasswordResetToken(token: string) {
-  const now = new Date();
+  const currentDate = new Date();
   
   const result = await db
     .select({
@@ -139,7 +142,7 @@ export async function getPasswordResetToken(token: string) {
     .innerJoin(users, eq(passwordResetTokens.userId, users.id))
     .where(and(
       eq(passwordResetTokens.token, token),
-      gt(passwordResetTokens.expiresAt, now),
+      gt(passwordResetTokens.expiresAt, currentDate),
       eq(passwordResetTokens.isUsed, false)
     ))
     .limit(1);
@@ -156,60 +159,28 @@ export async function markPasswordResetTokenAsUsed(tokenId: string) {
 
 export async function updateUserPassword(userId: string, newPassword: string) {
   const passwordHash = await hashPassword(newPassword);
-  const now = new Date();
+  const currentDate = new Date();
   
   await db
     .update(users)
     .set({ 
       passwordHash,
-      updatedAt: now
+      updatedAt: currentDate
     })
     .where(eq(users.id, userId));
 }
 
 // Utility functions
 export async function getUserSessionCount(userId: string): Promise<number> {
-  const now = new Date();
+  const currentDate = new Date();
   
   const result = await db
     .select()
     .from(sessions)
     .where(and(
       eq(sessions.userId, userId),
-      gt(sessions.expiresAt, now)
+      gt(sessions.expiresAt, currentDate)
     ));
     
   return result.length;
-}
-
-// Alternative: Using SQL function for current timestamp (if above doesn't work)
-export async function getSessionByTokenSQL(token: string) {
-  const result = await db
-    .select({
-      session: sessions,
-      user: {
-        id: users.id,
-        email: users.email,
-        firstName: users.firstName,
-        lastName: users.lastName,
-        company: users.company,
-        role: users.role,
-        credits: users.credits,
-        isActive: users.isActive,
-      }
-    })
-    .from(sessions)
-    .innerJoin(users, eq(sessions.userId, users.id))
-    .where(and(
-      eq(sessions.token, token),
-      sql`${sessions.expiresAt} > NOW()`,
-      eq(users.isActive, true)
-    ))
-    .limit(1);
-    
-  return result[0] || null;
-}
-
-export async function cleanupExpiredSessionsSQL() {
-  await db.delete(sessions).where(sql`${sessions.expiresAt} <= NOW()`);
 }

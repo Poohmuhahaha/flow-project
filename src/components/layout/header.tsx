@@ -55,13 +55,13 @@ export function Header() {
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/api/auth/login">
+            <Link href="/api/auth/login/interface">
               <User className="h-4 w-4 mr-2" />
               Sign In
             </Link>
           </Button>
-          <Button size="sm" asChild>
-            <Link href="/api/auth/signup">Get Started</Link>
+          <Button size="sm" asChild>  
+            <Link href="/api/auth/register/interface">Get Started</Link>
           </Button>
         </div>
 

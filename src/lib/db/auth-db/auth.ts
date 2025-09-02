@@ -1,6 +1,6 @@
 // lib/auth.ts
 import { NextRequest } from 'next/server';
-import { getUserByApiKey, hashApiKey, updateApiKeyLastUsed } from './db/queries';
+import { getUserByApiKey, hashApiKey, updateApiKeyLastUsed } from '../queries';
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {
