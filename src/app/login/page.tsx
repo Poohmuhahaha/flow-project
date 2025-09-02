@@ -18,8 +18,8 @@ export default function LoginPage() {
           <CardContent>
             <LoginForm />
             <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">Don&apos;t have an account? </span>
-              <Link href="/auth/signup" className="text-primary hover:underline font-medium">
+              <span className="text-muted-foreground-choice">Don&apos;t have an account? </span>
+              <Link href="/api/auth/signup" className="text-primary hover:underline font-medium">
                 Sign up
               </Link>
             </div>

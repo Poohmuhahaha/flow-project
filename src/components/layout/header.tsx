@@ -22,22 +22,20 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-            <Link href="/">
-              <Image
-                  src="/FLOW_logo_3.png"
-                  alt="FLO(W) logo"
-                  width={40}
-                  height={40}
-                />
-            </Link>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-foreground">FLO(W)</span>
-            <span className="text-xs text-muted-foreground hidden sm:block">Future Logistics & Optimization</span>
-          </div>
-        </Link>
+      <Link href="/" className="flex items-center space-x-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+          <Image
+            src="/FLOW_logo_3.png"
+            alt="FLO(W) logo"
+            width={40}
+            height={40}
+          />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-lg font-bold text-foreground">FLO(W)</span>
+          <span className="text-xs text-muted-foreground hidden sm:block">Future Logistics & Optimization</span>
+        </div>
+      </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
@@ -57,13 +55,13 @@ export function Header() {
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/auth/login">
+            <Link href="/api/auth/login">
               <User className="h-4 w-4 mr-2" />
               Sign In
             </Link>
           </Button>
           <Button size="sm" asChild>
-            <Link href="/auth/signup">Get Started</Link>
+            <Link href="/api/auth/signup">Get Started</Link>
           </Button>
         </div>
 
@@ -91,13 +89,13 @@ export function Header() {
             ))}
             <div className="pt-4 space-y-2">
               <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                <Link href="/auth/login">
+                <Link href="/api/auth/login">
                   <User className="h-4 w-4 mr-2" />
                   Sign In
                 </Link>
               </Button>
               <Button size="sm" className="w-full" asChild>
-                <Link href="/auth/signup">Get Started</Link>
+                <Link href="/api/auth/signup">Get Started</Link>
               </Button>
             </div>
           </nav>

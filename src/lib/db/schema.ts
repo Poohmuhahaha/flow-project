@@ -1,41 +1,71 @@
-import { uuid, integer, pgTable, varchar, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+// lib/db/schema.ts - เพิ่มเติมใน schema เดิม
+import { pgTable, text, timestamp, integer, boolean, uuid, jsonb } from 'drizzle-orm/pg-core';
+import { createId } from '@paralleldrive/cuid2';
 
-// ตาราง users
-export const users = pgTable("users", {
-  id: uuid("id").notNull().primaryKey().defaultRandom(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  name: varchar("name", { length: 255 }),
-  credits: integer("credits").notNull().default(0),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+// ตาราง users - เพิ่มฟิลด์สำหรับ authentication
+export const users = pgTable('users', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  email: text('email').unique().notNull(),
+  passwordHash: text('password_hash').notNull(), // เพิ่ม
+  firstName: text('first_name').notNull(), // เพิ่ม
+  lastName: text('last_name').notNull(), // เพิ่ม
+  company: text('company'), // เพิ่ม
+  role: text('role'), // เพิ่ม
+  credits: integer('credits').default(0).notNull(),
+  isActive: boolean('is_active').default(true).notNull(), // เพิ่ม
+  emailVerified: boolean('email_verified').default(false).notNull(), // เพิ่ม
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// ตาราง API keys
-export const apiKeys = pgTable("api_keys", {
-  id: uuid("id").notNull().primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => users.id),
-  keyHash: varchar("key_hash", { length: 255 }).notNull().unique(), // เก็บ hash ของ API key
-  name: varchar("name", { length: 255 }).notNull(),
-  isActive: boolean("is_active").notNull().default(true),
-  lastUsed: timestamp("last_used"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+// ตาราง sessions สำหรับจัดการ login sessions
+export const sessions = pgTable('sessions', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  token: text('token').unique().notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  userAgent: text('user_agent'),
+  ipAddress: text('ip_address'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// ตาราง usage logs
-export const usageLogs = pgTable("usage_logs", {
-  id: uuid("id").notNull().primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => users.id),
-  apiKeyId: uuid("api_key_id").notNull().references(() => apiKeys.id),
-  endpoint: varchar("endpoint", { length: 255 }).notNull(), // '/api/gis/analyze'
-  creditsUsed: integer("credits_used").notNull(),
-  requestData: jsonb("request_data"), // เก็บข้อมูล request
-  responseData: jsonb("response_data"), // เก็บข้อมูล response
-  processingTime: integer("processing_time"), // milliseconds
-  status: varchar("status", { length: 50 }).notNull(), // 'success', 'error', 'insufficient_credits'
-  errorMessage: varchar("error_message", { length: 1000 }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+// ตาราง password_reset_tokens
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  token: text('token').unique().notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  isUsed: boolean('is_used').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// ตาราง API keys (เดิม)
+export const apiKeys = pgTable('api_keys', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  keyHash: text('key_hash').unique().notNull(),
+  name: text('name').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  lastUsed: timestamp('last_used'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// ตาราง usage_logs (เดิม)
+export const usageLogs = pgTable('usage_logs', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  apiKeyId: text('api_key_id').references(() => apiKeys.id).notNull(),
+  endpoint: text('endpoint').notNull(),
+  creditsUsed: integer('credits_used').notNull(),
+  requestData: jsonb('request_data'),
+  responseData: jsonb('response_data'),
+  processingTime: integer('processing_time'),
+  status: text('status').notNull(),
+  errorMessage: text('error_message'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export type User = typeof users.$inferSelect;
+export type Session = typeof sessions.$inferSelect;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type UsageLog = typeof usageLogs.$inferSelect;

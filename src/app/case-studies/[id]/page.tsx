@@ -42,7 +42,7 @@ export default function CaseStudyPage({ params }: CaseStudyPageProps) {
           <CaseStudyContent caseStudy={caseStudy} />
         </div>
         <div className="mt-16">
-          <RelatedCaseStudies currentCaseStudyId={caseStudy.id} />
+          <RelatedCaseStudies />
         </div>
       </div>
     </div>

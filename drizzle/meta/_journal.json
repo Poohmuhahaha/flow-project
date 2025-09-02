@@ -15,6 +15,20 @@
       "when": 1756741655900,
       "tag": "0001_foamy_natasha_romanoff",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1756828222854,
+      "tag": "0002_powerful_micromacro",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1756834324017,
+      "tag": "0003_hot_talkback",
+      "breakpoints": true
     }
   ]
 }

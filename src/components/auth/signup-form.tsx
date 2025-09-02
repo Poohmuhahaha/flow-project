@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 export function SignupForm() {
@@ -35,13 +34,13 @@ export function SignupForm() {
 
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords don't match")
+      alert("Passwords don't match")
       setIsLoading(false)
       return
     }
 
     if (!formData.agreeToTerms) {
-      toast.error("Please agree to the terms and conditions")
+      alert("Please agree to the terms and conditions")
       setIsLoading(false)
       return
     }
@@ -214,7 +213,7 @@ export function SignupForm() {
             className="mt-1"
           />
           <Label htmlFor="updates" className="text-sm font-normal leading-5">
-            I&apos;d like to receive product updates and logistics industry insights via email
+            I'd like to receive product updates and logistics industry insights via email
           </Label>
         </div>
       </div>

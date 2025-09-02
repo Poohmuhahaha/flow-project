@@ -37,11 +37,11 @@ export default function DatasetPage({ params }: DatasetPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <DatasetDetails dataset={dataset} />
-            <DatasetPreview dataset={dataset} />
-            <DatasetReviews datasetId={dataset.id} />
+            <DatasetPreview />
+            <DatasetReviews />
           </div>
           <div className="lg:col-span-1">
-            <RelatedDatasets currentDatasetId={dataset.id} />
+            <RelatedDatasets />
           </div>
         </div>
       </div>
