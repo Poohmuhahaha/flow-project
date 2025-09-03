@@ -15,6 +15,8 @@ const protectedRoutes = [
 const authRoutes = [
   '/login',
   '/register',
+  '/auth',
+  '/forgot-password'
 ];
 
 export async function middleware(request: NextRequest) {

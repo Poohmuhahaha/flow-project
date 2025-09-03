@@ -27,27 +27,25 @@ export function LoginForm() {
     setIsLoading(true)
     setError('')
 
+    const { email, password, rememberMe } = formData
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, rememberMe }),
       })
 
       const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
+      if (data.success) {
+        // Redirect to dashboard on success
+        router.push('/api/dashboard')
+      } else {
+        setError(data.error || 'Login failed')
       }
-
-      // Login successful
-      router.push("/api/dashboard")
-      router.refresh()
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+    } catch (error) {
+      setError('Network error occurred')
     } finally {
       setIsLoading(false)
     }
@@ -68,7 +66,7 @@ export function LoginForm() {
         </div>
       )}
 
-      <div onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email address</Label>
           <Input
@@ -121,13 +119,13 @@ export function LoginForm() {
               Remember me
             </Label>
           </div>
-          <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
+          <Link href="/forgot-password" className="text-sm text-primary hover:underline">
             Forgot password?
           </Link>
         </div>
 
         <Button 
-          onClick={handleSubmit}
+          type="submit"
           className="w-full" 
           disabled={isLoading}
         >
@@ -140,6 +138,15 @@ export function LoginForm() {
             "Sign in"
           )}
         </Button>
+      </form>
+      
+      <div className="mt-4 text-center">
+        <p className="text-sm text-gray-600">
+          Don't have an account?{" "}
+          <Link href="/register" className="font-medium text-primary hover:underline">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   )

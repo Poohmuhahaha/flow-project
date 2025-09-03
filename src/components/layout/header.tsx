@@ -55,13 +55,13 @@ export function Header() {
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/api/auth/login/interface">
+            <Link href="/login">
               <User className="h-4 w-4 mr-2" />
               Sign In
             </Link>
           </Button>
           <Button size="sm" asChild>  
-            <Link href="/api/auth/register/interface">Get Started</Link>
+            <Link href="/register">Get Started</Link>
           </Button>
         </div>
 
@@ -89,13 +89,13 @@ export function Header() {
             ))}
             <div className="pt-4 space-y-2">
               <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                <Link href="/api/auth/login">
+                <Link href="/login">
                   <User className="h-4 w-4 mr-2" />
                   Sign In
                 </Link>
               </Button>
               <Button size="sm" className="w-full" asChild>
-                <Link href="/api/auth/signup">Get Started</Link>
+                <Link href="/register">Get Started</Link>
               </Button>
             </div>
           </nav>
