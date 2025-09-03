@@ -40,7 +40,7 @@ export function LoginForm() {
 
       if (data.success) {
         // Redirect to dashboard on success
-        router.push('/api/dashboard')
+        router.push('/dashboard')
       } else {
         setError(data.error || 'Login failed')
       }

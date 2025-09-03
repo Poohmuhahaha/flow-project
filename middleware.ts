@@ -22,6 +22,8 @@ const publicRoutes = [
   '/api/health',
   '/api/auth/login',
   '/api/auth/register',
+  '/api/demo/setup',        // เพิ่มสำหรับ demo setup
+  '/api/demo/setup-simple', // เพิ่มสำหรับ demo setup แบบง่าย
 ];
 
 // Auth routes ที่ login แล้วไม่ควรเข้า

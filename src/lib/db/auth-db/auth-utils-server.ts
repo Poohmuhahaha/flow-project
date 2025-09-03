@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { cookies } from 'next/headers';
+import { getSessionByToken } from './auth-queries';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
 const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -53,6 +54,24 @@ export async function setSessionCookie(token: string) {
 export async function clearSessionCookie() {
   const cookieStore = await cookies();
   cookieStore.delete('session');
+}
+
+// Get current user from session (Server only)
+export async function getCurrentUser() {
+  try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get('session')?.value;
+    
+    if (!sessionToken) {
+      return null;
+    }
+
+    const sessionData = await getSessionByToken(sessionToken);
+    return sessionData?.user || null;
+  } catch (error) {
+    console.error('Get current user error:', error);
+    return null;
+  }
 }
 
 // Validate email format

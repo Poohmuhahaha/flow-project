@@ -1,7 +1,8 @@
 // app/api/auth/register/route.ts - Enhanced error handling
 import { NextRequest, NextResponse } from 'next/server';
-import { createUser, getUserByEmail } from '@/lib/db/auth-db/auth-queries';
+import { createUser, getUserByEmail, createEmailVerificationToken } from '@/lib/db/auth-db/auth-queries';
 import { isValidEmail, isValidPassword } from '@/lib/db/auth-db/auth-utils-server';
+import { sendVerificationEmail } from '@/lib/email/email-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -92,9 +93,19 @@ export async function POST(request: NextRequest) {
     
     console.log('User created successfully:', { id: user.id, email: user.email });
 
+    // Send verification email
+    try {
+      const verificationToken = await createEmailVerificationToken(user.id);
+      await sendVerificationEmail(user.email, verificationToken.token);
+      console.log('Verification email sent to:', user.email);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Don't fail registration if email fails - user can resend later
+    }
+
     return NextResponse.json({
       success: true,
-      message: 'User created successfully',
+      message: 'User created successfully. Please check your email for verification instructions.',
       user: {
         id: user.id,
         email: user.email,

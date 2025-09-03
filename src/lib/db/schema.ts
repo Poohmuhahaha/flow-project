@@ -39,6 +39,15 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// ตาราง email_verification_tokens
+export const emailVerificationTokens = pgTable('email_verification_tokens', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  token: text('token').unique().notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // ตาราง API keys (เดิม)
 export const apiKeys = pgTable('api_keys', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
@@ -48,6 +57,7 @@ export const apiKeys = pgTable('api_keys', {
   isActive: boolean('is_active').default(true).notNull(),
   lastUsed: timestamp('last_used'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 // ตาราง usage_logs (เดิม)

@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { PasswordStrength, usePasswordStrength } from "@/components/ui/password-strength"
 
 export function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -27,12 +28,19 @@ export function SignupForm() {
     subscribeToUpdates: false,
   })
   const router = useRouter()
+  const passwordStrength = usePasswordStrength(formData.password)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     // Basic validation
+    if (!passwordStrength.isValid) {
+      alert("Password does not meet security requirements")
+      setIsLoading(false)
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords don't match")
       setIsLoading(false)
@@ -45,12 +53,34 @@ export function SignupForm() {
       return
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          company: formData.company,
+          role: formData.role,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+        }),
+      })
 
-    // For demo purposes, redirect to dashboard
-    router.push("/api/dashboard")
-    setIsLoading(false)
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        alert('Registration successful! Please check your email for verification.')
+        router.push('/login')
+      } else {
+        alert(data.error || 'Registration failed')
+      }
+    } catch (error) {
+      alert('Network error occurred')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,6 +211,11 @@ export function SignupForm() {
             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </Button>
         </div>
+        
+        {/* Password Strength Indicator */}
+        {formData.password && (
+          <PasswordStrength password={formData.password} />
+        )}
       </div>
 
       <div className="space-y-3">
@@ -218,7 +253,11 @@ export function SignupForm() {
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button 
+        type="submit" 
+        className="w-full" 
+        disabled={isLoading || !passwordStrength.isValid || formData.password !== formData.confirmPassword}
+      >
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

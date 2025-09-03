@@ -2,6 +2,32 @@
 import { NextRequest } from 'next/server';
 
 /**
+ * Extract client IP address from request (Edge Runtime compatible)
+ */
+export function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  
+  if (realIp) {
+    return realIp;
+  }
+  
+  // Fallback for development
+  return request.ip || '127.0.0.1';
+}
+
+/**
+ * Extract user agent from request (Edge Runtime compatible)
+ */
+export function getUserAgent(request: NextRequest): string {
+  return request.headers.get('user-agent') || 'Unknown';
+}
+
+/**
  * Extract session token from request (Edge Runtime compatible)
  */
 export function getSessionFromRequest(request: NextRequest): string | undefined {

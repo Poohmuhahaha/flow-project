@@ -1,7 +1,7 @@
 // lib/auth-queries-updated.ts - Fixed date issues
 import { eq, and, gt, sql, lt } from 'drizzle-orm';
 import { db } from '../index';
-import { users, sessions, passwordResetTokens } from '../schema';
+import { users, sessions, passwordResetTokens, emailVerificationTokens } from '../schema';
 import { hashPassword, generateSecureTokenServer } from '@/lib/db/auth-db/auth-utils-server';
 
 // User Management
@@ -157,6 +157,58 @@ export async function markPasswordResetTokenAsUsed(tokenId: string) {
     .update(passwordResetTokens)
     .set({ isUsed: true })
     .where(eq(passwordResetTokens.id, tokenId));
+}
+
+export async function usePasswordResetToken(token: string) {
+  await db
+    .update(passwordResetTokens)
+    .set({ isUsed: true })
+    .where(eq(passwordResetTokens.token, token));
+}
+
+// Email Verification
+export async function createEmailVerificationToken(userId: string) {
+  const token = generateSecureTokenServer();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  
+  const verificationToken = await db.insert(emailVerificationTokens).values({
+    userId,
+    token,
+    expiresAt,
+  }).returning();
+  
+  return verificationToken[0];
+}
+
+export async function getEmailVerificationToken(token: string) {
+  const now = new Date();
+  
+  const result = await db
+    .select({
+      verificationToken: emailVerificationTokens,
+      user: users
+    })
+    .from(emailVerificationTokens)
+    .innerJoin(users, eq(emailVerificationTokens.userId, users.id))
+    .where(and(
+      eq(emailVerificationTokens.token, token),
+      gt(emailVerificationTokens.expiresAt, now)
+    ))
+    .limit(1);
+    
+  return result[0]?.verificationToken || null;
+}
+
+export async function verifyUserEmail(userId: string) {
+  const now = new Date();
+  
+  await db
+    .update(users)
+    .set({ 
+      emailVerified: true,
+      updatedAt: now
+    })
+    .where(eq(users.id, userId));
 }
 
 export async function updateUserPassword(userId: string, newPassword: string) {

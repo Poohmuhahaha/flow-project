@@ -35,7 +35,8 @@ export async function updateUserCredits(userId: string, credits: number) {
 // API Key queries
 export async function createApiKey(userId: string, name: string) {
   const rawKey = crypto.randomBytes(32).toString('hex');
-  const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
+  const fullApiKey = `gis_${rawKey}`;
+  const keyHash = crypto.createHash('sha256').update(fullApiKey).digest('hex');
   
   await db.insert(apiKeys).values({
     userId,
@@ -43,7 +44,7 @@ export async function createApiKey(userId: string, name: string) {
     name,
   });
   
-  return `gis_${rawKey}`; // คืนค่า API key ตัวจริง (แสดงครั้งเดียว)
+  return fullApiKey; // คืนค่า API key ตัวจริง (แสดงครั้งเดียว)
 }
 
 export async function updateApiKeyLastUsed(apiKeyId: string) {
@@ -103,7 +104,7 @@ export async function toggleApiKeyStatus(keyId: string, userId: string, isActive
     .update(apiKeys)
     .set({ 
       isActive,
-      updatedAt: new Date()
+      // updatedAt: new Date() // ลบออกเพราะอาจไม่มี column นี้ใน DB
     })
     .where(and(
       eq(apiKeys.id, keyId),

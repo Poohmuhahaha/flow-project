@@ -29,7 +29,7 @@ export async function authenticateApiKey(request: NextRequest) {
     }
 
     const rawKey = apiKey.substring(4); // ลบ "gis_" ออก
-    const keyHash = hashApiKey(rawKey);
+    const keyHash = hashApiKey(apiKey); // ใช้ API key เต็มรูปแบบ
     
     const result = await getUserByApiKey(keyHash);
     

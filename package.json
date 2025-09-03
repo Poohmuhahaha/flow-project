@@ -18,6 +18,9 @@
     "test:api:credits": "echo \"Testing credit system...\"",
     "test:load:rate-limit": "echo \"Testing rate limiting...\"",
     "test:load:concurrent": "echo \"Testing concurrent requests...\"",
+    "demo:setup": "curl -X POST http://localhost:3000/api/demo/setup -H \"Content-Type: application/json\" -d '{\"email\": \"demo@example.com\", \"credits\": 1000}'",
+    "demo:setup-simple": "curl -X POST http://localhost:3000/api/demo/setup-simple -H \"Content-Type: application/json\" -d '{\"email\": \"demo@example.com\", \"credits\": 1000}'",
+    "demo:instructions": "curl -X GET http://localhost:3000/api/demo/setup",
     "api:demo": "curl -X GET http://localhost:3000/api/demo -H \"Authorization: Bearer YOUR_API_KEY\"",
     "api:health": "curl -X GET http://localhost:3000/api/health"
   },
