@@ -1,20 +1,26 @@
 // app/api/auth/api-key/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createApiKey } from '@/lib/db/queries';
+import { getServerSession } from '@/lib/db/auth-db/auth-server';
 
-// สำหรับ demo - ในการใช้งานจริงต้องมี user authentication
+// สำหรับ demo - ใช้ session authentication แทน
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { userId, name } = body;
+    const session = await getServerSession(request);
+    if (!session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
 
-    if (!userId || !name) {
+    const body = await request.json();
+    const { name } = body;
+
+    if (!name) {
       return NextResponse.json({ 
-        error: 'userId and name are required' 
+        error: 'name is required' 
       }, { status: 400 });
     }
 
-    const apiKey = await createApiKey(userId, name);
+    const apiKey = await createApiKey(session.userId, name);
 
     return NextResponse.json({
       success: true,

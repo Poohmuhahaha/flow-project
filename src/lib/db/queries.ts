@@ -1,5 +1,5 @@
 // lib/db/queries.ts
-import { eq, desc, and, gte, lte } from 'drizzle-orm';
+import { eq, desc, and, gte, lte, sql } from 'drizzle-orm';
 import { db } from './index';
 import { users, apiKeys, usageLogs } from './schema';
 import crypto from 'crypto';
@@ -75,6 +75,91 @@ export async function getUserUsage(userId: string, limit = 100) {
     .where(eq(usageLogs.userId, userId))
     .orderBy(desc(usageLogs.createdAt))
     .limit(limit);
+}
+
+// API Key queries (เพิ่มเติม)
+export async function getUserApiKeys(userId: string) {
+  return await db
+    .select()
+    .from(apiKeys)
+    .where(eq(apiKeys.userId, userId))
+    .orderBy(desc(apiKeys.createdAt));
+}
+
+export async function deleteApiKey(keyId: string, userId: string) {
+  const result = await db
+    .delete(apiKeys)
+    .where(and(
+      eq(apiKeys.id, keyId),
+      eq(apiKeys.userId, userId)
+    ))
+    .returning();
+    
+  return result.length > 0;
+}
+
+export async function toggleApiKeyStatus(keyId: string, userId: string, isActive: boolean) {
+  const result = await db
+    .update(apiKeys)
+    .set({ 
+      isActive,
+      updatedAt: new Date()
+    })
+    .where(and(
+      eq(apiKeys.id, keyId),
+      eq(apiKeys.userId, userId)
+    ))
+    .returning();
+    
+  return result.length > 0;
+}
+
+// Credit management
+export async function deductCredits(userId: string, amount: number) {
+  const result = await db
+    .update(users)
+    .set({ 
+      credits: sql`credits - ${amount}`,
+      updatedAt: new Date()
+    })
+    .where(and(
+      eq(users.id, userId),
+      gte(users.credits, amount) // ตรวจสอบว่ามี credits เพียงพอ
+    ))
+    .returning();
+    
+  return result.length > 0;
+}
+
+export async function addCredits(userId: string, amount: number) {
+  await db
+    .update(users)
+    .set({ 
+      credits: sql`credits + ${amount}`,
+      updatedAt: new Date()
+    })
+    .where(eq(users.id, userId));
+}
+
+// Usage analytics
+export async function getUserUsageStats(userId: string, days = 30) {
+  const dateFrom = new Date();
+  dateFrom.setDate(dateFrom.getDate() - days);
+  
+  return await db
+    .select({
+      date: sql<string>`date_trunc('day', created_at)`,
+      requests: sql<number>`count(*)`,
+      creditsUsed: sql<number>`sum(credits_used)`,
+      successRate: sql<number>`avg(case when status = 'success' then 1.0 else 0.0 end) * 100`
+    })
+    .from(usageLogs)
+    .where(and(
+      eq(usageLogs.userId, userId),
+      gte(usageLogs.createdAt, dateFrom)
+    ))
+    .groupBy(sql`date_trunc('day', created_at)`)
+    .orderBy(sql`date_trunc('day', created_at)`);
 }
 
 // Utility functions

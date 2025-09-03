@@ -6,9 +6,22 @@ import { getSessionFromRequest } from '@/lib/db/auth-db/auth-utils-edge';
 const protectedRoutes = [
   '/dashboard',
   '/purchase',
-  '/api/gis/analyze',
+  '/api/auth/api-keys', // เพิ่ม API keys management
+  '/api/credits',       // เพิ่ม credits management (POST)
+];
+
+// Public API routes ที่ใช้ API key authentication
+const apiKeyRoutes = [
+  '/api/demo',
   '/api/usage',
-  '/api/auth/api-key',
+  '/api/gis/',
+];
+
+// Public routes ที่ไม่ต้อง auth
+const publicRoutes = [
+  '/api/health',
+  '/api/auth/login',
+  '/api/auth/register',
 ];
 
 // Auth routes ที่ login แล้วไม่ควรเข้า
@@ -23,17 +36,31 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionToken = getSessionFromRequest(request);
 
-  // ตรวจสอบว่าเป็น protected route หรือไม่
+  // ตรวจสอบ route types
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route)
   );
-
-  // ตรวจสอบว่าเป็น auth route หรือไม่
   const isAuthRoute = authRoutes.some(route => 
     pathname.startsWith(route)
   );
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname.startsWith(route)
+  );
+  const isApiKeyRoute = apiKeyRoutes.some(route => 
+    pathname.startsWith(route)
+  );
 
-  // ถ้าเป็น protected route
+  // Public routes - ผ่านไปเลย
+  if (isPublicRoute) {
+    return NextResponse.next();
+  }
+
+  // API key routes - ให้ API endpoint จัดการเอง
+  if (isApiKeyRoute) {
+    return NextResponse.next();
+  }
+
+  // Protected routes
   if (isProtectedRoute) {
     if (!sessionToken) {
       // ไม่มี session -> redirect ไป login
@@ -45,11 +72,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    // สำหรับ page routes - redirect ถ้าไม่มี session
     return NextResponse.next();
   }
 
-  // ถ้าเป็น auth route และมี session แล้ว -> redirect dashboard
+  // Auth routes - ถ้ามี session แล้ว -> redirect dashboard
   if (isAuthRoute && sessionToken) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
