@@ -110,16 +110,12 @@
   "resolutions": {
     "react": "^19",
     "react-dom": "^19",
-    "jwt": "jsonwebtoken",
-    "node-base64": "base64-js",
     "@types/bcryptjs": "npm:@types/bcrypt@^5.0.2"
   },
   "pnpm": {
     "overrides": {
       "react": "^19",
-      "react-dom": "^19",
-      "jwt": "jsonwebtoken",
-      "node-base64": "base64-js"
+      "react-dom": "^19"
     }
   }
 }
