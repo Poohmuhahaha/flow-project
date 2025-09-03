@@ -233,7 +233,7 @@ export function SignupForm() {
           </div>
         </div>
 
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-muted-foreground-choice">
           Password must be at least 8 characters long and contain uppercase, lowercase, and numbers.
         </div>
 
