@@ -43,7 +43,7 @@ export function LoginForm() {
       }
 
       // Login successful
-      router.push("/dashboard")
+      router.push("/api/dashboard")
       router.refresh()
 
     } catch (err) {

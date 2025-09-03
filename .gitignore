@@ -11,3 +11,4 @@ pnpm-lock.yaml
 
 # Environment variables
 .env.local
+.env

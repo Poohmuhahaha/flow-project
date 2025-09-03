@@ -49,7 +49,7 @@ export function SignupForm() {
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // For demo purposes, redirect to dashboard
-    router.push("/dashboard")
+    router.push("/api/dashboard")
     setIsLoading(false)
   }
 
