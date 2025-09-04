@@ -1,3 +1,4 @@
+export const runtime = 'nodejs'
 // lib/db/queries.ts
 import { eq, desc, and, gte, lte, sql } from 'drizzle-orm';
 import { db } from './index';
@@ -85,7 +86,11 @@ export async function getUserUsage(userId: string, limit = 100) {
     
     return result || [];
   } catch (error) {
-    console.error('Failed query: getUserUsage', { userId, limit, error: error.message });
+    console.error('Failed query: getUserUsage', { 
+      userId, 
+      limit, 
+      error: error?.message || 'Unknown error' 
+    });
     // คืนค่า empty array เมื่อมี error
     return [];
   }
@@ -102,7 +107,10 @@ export async function getUserApiKeys(userId: string) {
     
     return result || [];
   } catch (error) {
-    console.error('Failed query: getUserApiKeys', { userId, error: error.message });
+    console.error('Failed query: getUserApiKeys', { 
+      userId, 
+      error: error?.message || 'Unknown error' 
+    });
     // คืนค่า empty array แทนที่ throw error
     return [];
   }
@@ -186,7 +194,12 @@ export async function getUserUsageStats(userId: string, days = 30) {
     
     return result || [];
   } catch (error) {
-    console.error('Failed query: getUserUsageStats', { userId, days, dateFrom, error: error.message });
+    console.error('Failed query: getUserUsageStats', { 
+      userId, 
+      days, 
+      dateFrom, 
+      error: error?.message || 'Unknown error' 
+    });
     // คืนค่า empty array เมื่อมี error
     return [];
   }
