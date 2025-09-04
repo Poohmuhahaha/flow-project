@@ -25,20 +25,20 @@ export async function POST(request: NextRequest) {
     // Check if token is valid and not expired
     const resetTokenData = await getPasswordResetToken(token);
     
-    if (!resetTokenData || resetTokenData.isUsed) {
+    if (!resetTokenData || resetTokenData.resetToken.isUsed) {
       return NextResponse.json({ 
         error: 'Invalid or expired reset token' 
       }, { status: 400 });
     }
 
-    if (new Date() > resetTokenData.expiresAt) {
+    if (new Date() > resetTokenData.resetToken.expiresAt) {
       return NextResponse.json({ 
         error: 'Reset token has expired' 
       }, { status: 400 });
     }
 
     // Update password
-    await updateUserPassword(resetTokenData.userId, password);
+    await updateUserPassword(resetTokenData.user.id, password);
     
     // Mark token as used
     await usePasswordResetToken(token);
