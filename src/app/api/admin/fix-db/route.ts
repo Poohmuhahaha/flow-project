@@ -77,8 +77,9 @@ export async function POST() {
         await sql.unsafe(constraint.sql);
         constraintResults.push({ table: constraint.name, status: 'success' });
       } catch (error) {
-        console.log(`${constraint.name} FK constraint failed:`, error.message);
-        constraintResults.push({ table: constraint.name, status: 'failed', error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.log(`${constraint.name} FK constraint failed:`, errorMessage);
+        constraintResults.push({ table: constraint.name, status: 'failed', error: errorMessage });
       }
     }
     
