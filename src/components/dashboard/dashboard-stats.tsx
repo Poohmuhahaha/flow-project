@@ -9,20 +9,35 @@ interface DashboardStatsProps {
 
 export async function DashboardStats({ userId }: DashboardStatsProps) {
   const user = await getCurrentUser();
-  const apiKeys = await getUserApiKeys(userId);
-  const usageStats = await getUserUsageStats(userId, 30);
+  
+  let apiKeys = [];
+  let usageStats = [];
+  
+  try {
+    apiKeys = await getUserApiKeys(userId);
+  } catch (error) {
+    console.error('Failed to fetch API keys:', error);
+    apiKeys = [];
+  }
+  
+  try {
+    usageStats = await getUserUsageStats(userId, 30);
+  } catch (error) {
+    console.error('Failed to fetch usage stats:', error);
+    usageStats = [];
+  }
 
-  const activeApiKeys = apiKeys.filter(key => key.isActive).length;
-  const totalRequests = usageStats.reduce((sum, stat) => sum + stat.requests, 0);
-  const totalCreditsUsed = usageStats.reduce((sum, stat) => sum + stat.creditsUsed, 0);
-  const avgSuccessRate = usageStats.length > 0 
-    ? usageStats.reduce((sum, stat) => sum + stat.successRate, 0) / usageStats.length 
+  const activeApiKeys = Array.isArray(apiKeys) ? apiKeys.filter(key => key.isActive).length : 0;
+  const totalRequests = Array.isArray(usageStats) ? usageStats.reduce((sum, stat) => sum + (stat.requests || 0), 0) : 0;
+  const totalCreditsUsed = Array.isArray(usageStats) ? usageStats.reduce((sum, stat) => sum + (stat.creditsUsed || 0), 0) : 0;
+  const avgSuccessRate = Array.isArray(usageStats) && usageStats.length > 0 
+    ? usageStats.reduce((sum, stat) => sum + (stat.successRate || 0), 0) / usageStats.length 
     : 0;
 
   const stats = [
     {
       title: 'Available Credits',
-      value: user?.credits?.toLocaleString() || '0',
+      value: (user?.credits || 0).toLocaleString(),
       icon: CreditCard,
       description: 'Credits remaining',
       color: 'text-green-600',
@@ -31,7 +46,7 @@ export async function DashboardStats({ userId }: DashboardStatsProps) {
       title: 'Active API Keys',
       value: activeApiKeys.toString(),
       icon: Key,
-      description: `${apiKeys.length} total keys`,
+      description: `${Array.isArray(apiKeys) ? apiKeys.length : 0} total keys`,
       color: 'text-blue-600',
     },
     {

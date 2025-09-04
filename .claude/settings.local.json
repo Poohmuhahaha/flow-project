@@ -6,7 +6,22 @@
       "Bash(npm run build:*)",
       "Bash(rd:*)",
       "Bash(taskkill:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(npx drizzle-kit push:*)",
+      "Bash(bun run:*)",
+      "Bash(bunx drizzle-kit:*)",
+      "Bash(psql:*)",
+      "Bash(bun install:*)",
+      "Bash(rm:*)",
+      "Bash(bun remove:*)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\components\\dashboard/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\components\\dashboard/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\dashboard/**)"
     ],
     "deny": [],
     "ask": []

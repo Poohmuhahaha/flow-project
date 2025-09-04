@@ -189,7 +189,7 @@ export function ApiKeysSection({ userId }: ApiKeysSectionProps) {
                   <div className="mt-2">
                     <div className="flex items-center space-x-2">
                       <code className="text-xs bg-muted px-2 py-1 rounded">
-                        {showKey === key.id ? key.keyHash : 'gis_••••••••••••••••'}
+                        {showKey === key.id ? `gis_${key.keyHash.substring(0, 8)}...${key.keyHash.slice(-8)}` : 'gis_••••••••••••••••'}
                       </code>
                       <Button
                         variant="ghost"
@@ -201,7 +201,8 @@ export function ApiKeysSection({ userId }: ApiKeysSectionProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(`gis_${key.keyHash}`)}
+                        onClick={() => copyToClipboard(showKey === key.id ? `gis_${key.keyHash}` : 'Key is hidden')}
+                        disabled={showKey !== key.id}
                       >
                         <Copy className="w-4 h-4" />
                       </Button>

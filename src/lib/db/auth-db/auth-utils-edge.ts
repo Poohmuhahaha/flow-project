@@ -32,7 +32,7 @@ export function getUserAgent(request: NextRequest): string {
  */
 export function getSessionFromRequest(request: NextRequest): string | undefined {
   // ลอง cookie ก่อน
-  const sessionToken = request.cookies.get('session_token')?.value;
+  const sessionToken = request.cookies.get('session')?.value;
   if (sessionToken) {
     return sessionToken;
   }

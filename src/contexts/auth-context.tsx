@@ -11,7 +11,6 @@ interface User {
   company?: string | null;
   role?: string | null;
   credits: number;
-  emailVerified: boolean;
   isActive: boolean;
 }
 

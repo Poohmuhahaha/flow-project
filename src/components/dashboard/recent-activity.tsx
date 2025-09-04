@@ -8,7 +8,19 @@ interface RecentActivityProps {
 }
 
 export async function RecentActivity({ userId }: RecentActivityProps) {
-  const recentUsage = await getUserUsage(userId, 10); // Last 10 activities
+  let recentUsage = [];
+  
+  try {
+    recentUsage = await getUserUsage(userId, 10); // Last 10 activities
+  } catch (error) {
+    console.error('Failed to fetch recent usage:', error);
+    recentUsage = [];
+  }
+
+  // ตรวจสอบว่าเป็น array
+  if (!Array.isArray(recentUsage)) {
+    recentUsage = [];
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -75,7 +87,7 @@ export async function RecentActivity({ userId }: RecentActivityProps) {
                       {formatTime(activity.createdAt)}
                     </p>
                     <div className="flex items-center space-x-3 text-xs text-muted-foreground">
-                      <span>{activity.creditsUsed} credits</span>
+                      <span>{activity.creditsUsed || 0} credits</span>
                       {activity.processingTime && (
                         <span>{activity.processingTime}ms</span>
                       )}

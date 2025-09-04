@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { toggleApiKeyStatus } from '@/lib/db/queries';
 import { getServerSession } from '@/lib/db/auth-db/auth-server';
 
-// PUT - เปิด/ปิด API Key
-export async function PUT(request: NextRequest) {
+// POST - เปิด/ปิด API Key
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(request);
     if (!session) {

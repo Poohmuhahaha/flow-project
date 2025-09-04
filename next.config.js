@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable turbopack to avoid Windows permission issues
-  turbo: false,
+  // Remove turbo config to fix warning
+  experimental: {
+    // Add any experimental features here if needed
+  }
 }
 
 module.exports = nextConfig

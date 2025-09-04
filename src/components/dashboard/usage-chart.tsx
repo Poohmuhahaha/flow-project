@@ -6,7 +6,19 @@ interface UsageChartProps {
 }
 
 export async function UsageChart({ userId }: UsageChartProps) {
-  const usageStats = await getUserUsageStats(userId, 7); // Last 7 days
+  let usageStats = [];
+  
+  try {
+    usageStats = await getUserUsageStats(userId, 7); // Last 7 days
+  } catch (error) {
+    console.error('Error loading usage stats:', error);
+    usageStats = [];
+  }
+
+  // ตรวจสอบว่าเป็น array และมีข้อมูล
+  if (!Array.isArray(usageStats)) {
+    usageStats = [];
+  }
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', { 
@@ -15,7 +27,7 @@ export async function UsageChart({ userId }: UsageChartProps) {
     });
   };
 
-  const maxRequests = Math.max(...usageStats.map(stat => stat.requests), 1);
+  const maxRequests = usageStats.length > 0 ? Math.max(...usageStats.map(stat => stat.requests || 0), 1) : 1;
 
   return (
     <Card>
@@ -46,13 +58,13 @@ export async function UsageChart({ userId }: UsageChartProps) {
                 </div>
                 <div className="flex items-center space-x-4 text-sm">
                   <span className="text-muted-foreground">
-                    {stat.requests} req
+                    {stat.requests || 0} req
                   </span>
                   <span className="text-muted-foreground">
-                    {stat.creditsUsed} credits
+                    {stat.creditsUsed || 0} credits
                   </span>
                   <span className="text-green-600">
-                    {stat.successRate.toFixed(1)}%
+                    {(stat.successRate || 0).toFixed(1)}%
                   </span>
                 </div>
               </div>

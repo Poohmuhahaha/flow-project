@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS "users" (
   "name" text,
   "credits" integer DEFAULT 1000 NOT NULL,
   "is_active" boolean DEFAULT true NOT NULL,
-  "email_verified" boolean DEFAULT false NOT NULL,
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -25,7 +24,8 @@ CREATE TABLE IF NOT EXISTS "api_keys" (
   "name" text NOT NULL,
   "is_active" boolean DEFAULT true NOT NULL,
   "last_used" timestamp,
-  "created_at" timestamp DEFAULT now() NOT NULL
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "usage_logs" (
@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS "password_reset_tokens" (
   "is_used" boolean DEFAULT false NOT NULL,
   "created_at" timestamp DEFAULT now() NOT NULL
 );
+
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS "idx_api_keys_user_id" ON "api_keys" ("user_id");

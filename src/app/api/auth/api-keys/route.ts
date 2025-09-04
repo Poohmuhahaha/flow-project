@@ -18,10 +18,10 @@ export async function GET(request: NextRequest) {
       apiKeys: apiKeys.map(key => ({
         id: key.id,
         name: key.name,
+        keyHash: key.keyHash, // ส่งกลับมาเพื่อแสดงบางส่วน
         isActive: key.isActive,
         lastUsed: key.lastUsed,
         createdAt: key.createdAt,
-        // ไม่ส่ง keyHash เพื่อความปลอดภัย
       }))
     });
 
@@ -78,8 +78,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const keyId = searchParams.get('id');
+    const body = await request.json();
+    const { keyId } = body;
 
     if (!keyId) {
       return NextResponse.json({ error: 'API key ID is required' }, { status: 400 });

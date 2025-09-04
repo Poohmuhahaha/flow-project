@@ -3,6 +3,7 @@ import { eq, desc, and, gte, lte, sql } from 'drizzle-orm';
 import { db } from './index';
 import { users, apiKeys, usageLogs } from './schema';
 import crypto from 'crypto';
+import { createId } from '@paralleldrive/cuid2';
 
 // User queries
 export async function getUserByApiKey(apiKeyHash: string) {
@@ -39,6 +40,7 @@ export async function createApiKey(userId: string, name: string) {
   const keyHash = crypto.createHash('sha256').update(fullApiKey).digest('hex');
   
   await db.insert(apiKeys).values({
+    id: createId(),
     userId,
     keyHash,
     name,
@@ -66,25 +68,44 @@ export async function createUsageLog(data: {
   status: string;
   errorMessage?: string;
 }) {
-  await db.insert(usageLogs).values(data);
+  await db.insert(usageLogs).values({
+    id: createId(),
+    ...data
+  });
 }
 
 export async function getUserUsage(userId: string, limit = 100) {
-  return await db
-    .select()
-    .from(usageLogs)
-    .where(eq(usageLogs.userId, userId))
-    .orderBy(desc(usageLogs.createdAt))
-    .limit(limit);
+  try {
+    const result = await db
+      .select()
+      .from(usageLogs)
+      .where(eq(usageLogs.userId, userId))
+      .orderBy(desc(usageLogs.createdAt))
+      .limit(limit);
+    
+    return result || [];
+  } catch (error) {
+    console.error('Failed query: getUserUsage', { userId, limit, error: error.message });
+    // คืนค่า empty array เมื่อมี error
+    return [];
+  }
 }
 
 // API Key queries (เพิ่มเติม)
 export async function getUserApiKeys(userId: string) {
-  return await db
-    .select()
-    .from(apiKeys)
-    .where(eq(apiKeys.userId, userId))
-    .orderBy(desc(apiKeys.createdAt));
+  try {
+    const result = await db
+      .select()
+      .from(apiKeys)
+      .where(eq(apiKeys.userId, userId))
+      .orderBy(desc(apiKeys.createdAt));
+    
+    return result || [];
+  } catch (error) {
+    console.error('Failed query: getUserApiKeys', { userId, error: error.message });
+    // คืนค่า empty array แทนที่ throw error
+    return [];
+  }
 }
 
 export async function deleteApiKey(keyId: string, userId: string) {
@@ -104,7 +125,7 @@ export async function toggleApiKeyStatus(keyId: string, userId: string, isActive
     .update(apiKeys)
     .set({ 
       isActive,
-      // updatedAt: new Date() // ลบออกเพราะอาจไม่มี column นี้ใน DB
+      // บันทึก: ลบ updatedAt ออกเพราะไม่มี column นี้ใน database จริง
     })
     .where(and(
       eq(apiKeys.id, keyId),
@@ -147,20 +168,28 @@ export async function getUserUsageStats(userId: string, days = 30) {
   const dateFrom = new Date();
   dateFrom.setDate(dateFrom.getDate() - days);
   
-  return await db
-    .select({
-      date: sql<string>`date_trunc('day', created_at)`,
-      requests: sql<number>`count(*)`,
-      creditsUsed: sql<number>`sum(credits_used)`,
-      successRate: sql<number>`avg(case when status = 'success' then 1.0 else 0.0 end) * 100`
-    })
-    .from(usageLogs)
-    .where(and(
-      eq(usageLogs.userId, userId),
-      gte(usageLogs.createdAt, dateFrom)
-    ))
-    .groupBy(sql`date_trunc('day', created_at)`)
-    .orderBy(sql`date_trunc('day', created_at)`);
+  try {
+    const result = await db
+      .select({
+        date: sql<string>`date_trunc('day', created_at)`,
+        requests: sql<number>`count(*)`,
+        creditsUsed: sql<number>`sum(credits_used)`,
+        successRate: sql<number>`avg(case when status = 'success' then 1.0 else 0.0 end) * 100`
+      })
+      .from(usageLogs)
+      .where(and(
+        eq(usageLogs.userId, userId),
+        gte(usageLogs.createdAt, dateFrom)
+      ))
+      .groupBy(sql`date_trunc('day', created_at)`)
+      .orderBy(sql`date_trunc('day', created_at)`);
+    
+    return result || [];
+  } catch (error) {
+    console.error('Failed query: getUserUsageStats', { userId, days, dateFrom, error: error.message });
+    // คืนค่า empty array เมื่อมี error
+    return [];
+  }
 }
 
 // Utility functions

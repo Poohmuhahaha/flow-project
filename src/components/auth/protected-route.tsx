@@ -7,13 +7,11 @@ import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireEmailVerified?: boolean;
   fallback?: React.ReactNode;
 }
 
 export function ProtectedRoute({ 
   children, 
-  requireEmailVerified = false,
   fallback 
 }: ProtectedRouteProps) {
   const [isChecking, setIsChecking] = useState(true);
@@ -27,14 +25,10 @@ export function ProtectedRoute({
         return;
       }
 
-      if (requireEmailVerified && !user.emailVerified) {
-        router.push('/verify-email');
-        return;
-      }
 
       setIsChecking(false);
     }
-  }, [user, isLoading, requireEmailVerified, router]);
+  }, [user, isLoading, router]);
 
   if (isLoading || isChecking) {
     return fallback || (
@@ -51,9 +45,6 @@ export function ProtectedRoute({
     return null; // Will redirect to login
   }
 
-  if (requireEmailVerified && !user.emailVerified) {
-    return null; // Will redirect to verification
-  }
 
   return <>{children}</>;
 }
@@ -62,7 +53,6 @@ export function ProtectedRoute({
 export function withProtectedRoute<P extends object>(
   Component: React.ComponentType<P>,
   options?: {
-    requireEmailVerified?: boolean;
     fallback?: React.ReactNode;
   }
 ) {

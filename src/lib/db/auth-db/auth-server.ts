@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { db } from '../index';
 import { sessions, users } from '../schema';
 import { eq, and, gt } from 'drizzle-orm';
+import { createId } from '@paralleldrive/cuid2';
 
 export interface ServerSession {
   userId: string;
@@ -20,11 +21,11 @@ export async function getServerSession(request?: NextRequest): Promise<ServerSes
 
     if (request) {
       // ใน API route
-      sessionToken = request.cookies.get('session_token')?.value;
+      sessionToken = request.cookies.get('session')?.value;
     } else {
       // ใน server component
-      const cookieStore = cookies();
-      sessionToken = cookieStore.get('session_token')?.value;
+      const cookieStore = await cookies();
+      sessionToken = cookieStore.get('session')?.value;
     }
 
     if (!sessionToken) {
@@ -71,6 +72,7 @@ export async function createSession(userId: string, userAgent?: string, ipAddres
   expiresAt.setDate(expiresAt.getDate() + 30); // หมดอายุใน 30 วัน
 
   await db.insert(sessions).values({
+    id: createId(),
     userId,
     token,
     expiresAt,
