@@ -10,7 +10,11 @@
 **ปัญหา:** `@/lib/email/email-service` ไม่มี
 **แก้ไข:** สร้าง email service stub สำหรับ production
 
-### Error 3: npm Script TypeScript Issue
+### Error 3: TypeScript Error - Unknown Error Type
+**ปัญหา:** `error.message` ใน catch block ไม่ได้ type check
+**แก้ไข:** ใช้ `error instanceof Error ? error.message : 'Unknown error'`
+
+### Error 4: npm Script TypeScript Issue
 **ปัญหา:** `db:setup` script ใช้ TypeScript module ที่ build ไม่ได้
 **แก้ไข:** เปลี่ยนเป็น message ที่บอกใช้ API แทน
 
