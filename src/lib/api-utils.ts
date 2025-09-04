@@ -18,7 +18,7 @@ export function getUserIP(request: NextRequest): string {
   }
   
   // Fallback for development
-  return request.ip || '127.0.0.1';
+  return '127.0.0.1';
 }
 
 /**

@@ -6,7 +6,7 @@ interface UsageChartProps {
 }
 
 export async function UsageChart({ userId }: UsageChartProps) {
-  let usageStats = [];
+  let usageStats: any[] = [];
   
   try {
     usageStats = await getUserUsageStats(userId, 7); // Last 7 days

@@ -27,7 +27,7 @@ export async function sendPasswordResetEmail(email: string, resetToken: string) 
     return {
       success: false,
       message: 'Failed to send password reset email',
-      error: error.message
+      error: (error as Error).message
     };
   }
 }
@@ -51,7 +51,7 @@ export async function sendVerificationEmail(email: string, verificationToken: st
     return {
       success: false,
       message: 'Failed to send verification email',
-      error: error.message
+      error: (error as Error).message
     };
   }
 }
@@ -74,7 +74,7 @@ export async function sendWelcomeEmail(email: string, firstName: string) {
     return {
       success: false,
       message: 'Failed to send welcome email',
-      error: error.message
+      error: (error as Error).message
     };
   }
 }

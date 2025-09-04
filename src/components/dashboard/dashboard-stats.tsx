@@ -10,8 +10,8 @@ interface DashboardStatsProps {
 export async function DashboardStats({ userId }: DashboardStatsProps) {
   const user = await getCurrentUser();
   
-  let apiKeys = [];
-  let usageStats = [];
+  let apiKeys: any[] = [];
+  let usageStats: any[] = [];
   
   try {
     apiKeys = await getUserApiKeys(userId);

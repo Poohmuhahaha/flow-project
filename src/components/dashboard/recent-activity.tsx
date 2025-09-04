@@ -8,7 +8,7 @@ interface RecentActivityProps {
 }
 
 export async function RecentActivity({ userId }: RecentActivityProps) {
-  let recentUsage = [];
+  let recentUsage: any[] = [];
   
   try {
     recentUsage = await getUserUsage(userId, 10); // Last 10 activities

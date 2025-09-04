@@ -1,9 +1,10 @@
 // app/api/demo/setup/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { users, apiKeys } from '@/lib/db/schema';
+import { users } from '@/lib/db/schema';
 import { createApiKey } from '@/lib/db/queries';
 import { eq } from 'drizzle-orm';
+import { createId } from '@paralleldrive/cuid2';
 
 // POST - สร้าง demo user และ API key สำหรับทดสอบ
 export async function POST(request: NextRequest) {
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ตรวจสอบว่า user มีอยู่แล้วหรือไม่
-    let existingUser = await db
+    const existingUser = await db
       .select()
       .from(users)
       .where(eq(users.email, email))
@@ -42,13 +43,13 @@ export async function POST(request: NextRequest) {
     } else {
       // สร้าง user ใหม่
       const newUsers = await db.insert(users).values({
+        id: createId(),
         email,
         passwordHash: 'demo_password_hash', // ใช้ในการ demo เท่านั้น
         firstName: name,
         lastName: 'Demo',
         credits,
         isActive: true,
-        emailVerified: true,
       }).returning();
 
       userId = newUsers[0].id;

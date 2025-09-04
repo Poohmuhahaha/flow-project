@@ -42,7 +42,22 @@
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db\\auth-db/**)",
       "Bash(python test:*)",
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
-      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)"
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\api\\demo\\setup/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\components\\dashboard/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\components\\dashboard/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\components\\dashboard/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db\\auth-db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\email/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\reset-password/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\reset-password/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\reset-password/**)"
     ],
     "deny": [],
     "ask": []

@@ -89,7 +89,7 @@ export async function getUserUsage(userId: string, limit = 100) {
     console.error('Failed query: getUserUsage', { 
       userId, 
       limit, 
-      error: error?.message || 'Unknown error' 
+      error: (error as Error)?.message || 'Unknown error' 
     });
     // คืนค่า empty array เมื่อมี error
     return [];
@@ -109,7 +109,7 @@ export async function getUserApiKeys(userId: string) {
   } catch (error) {
     console.error('Failed query: getUserApiKeys', { 
       userId, 
-      error: error?.message || 'Unknown error' 
+      error: (error as Error)?.message || 'Unknown error' 
     });
     // คืนค่า empty array แทนที่ throw error
     return [];
@@ -198,7 +198,7 @@ export async function getUserUsageStats(userId: string, days = 30) {
       userId, 
       days, 
       dateFrom, 
-      error: error?.message || 'Unknown error' 
+      error: (error as Error)?.message || 'Unknown error' 
     });
     // คืนค่า empty array เมื่อมี error
     return [];
