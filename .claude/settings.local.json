@@ -63,7 +63,9 @@
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

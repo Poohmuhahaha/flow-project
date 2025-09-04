@@ -1,6 +1,5 @@
 // lib/db/schema.ts - แก้ไข schema ให้ตรงกับ database จริง
 import { pgTable, text, timestamp, integer, boolean, uuid, jsonb, varchar } from 'drizzle-orm/pg-core';
-// ลบ createId import เพราะไม่ใช้แล้ว
 
 // ตาราง users - เปลี่ยนจาก text เป็น uuid ให้ตรงกับ database
 export const users = pgTable('users', {
@@ -11,7 +10,8 @@ export const users = pgTable('users', {
   lastName: text('last_name').notNull(), 
   company: text('company'),
   role: text('role'),
-  credits: integer('credits').default(0).notNull(),
+  name: text('name'), // เพิ่ม field นี้ตาม manual_db_setup.sql
+  credits: integer('credits').default(1000).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -38,8 +38,7 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-
-// ตาราง API keys - แก้ไขให้ตรงกับ database
+// ตาราง API keys - แก้ไขให้ตรงกับ database จริง (ลบ updatedAt)
 export const apiKeys = pgTable('api_keys', {
   id: text('id').primaryKey(), // ใช้ text ตาม database จริง
   userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),

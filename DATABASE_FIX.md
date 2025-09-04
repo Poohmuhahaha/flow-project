@@ -1,155 +1,140 @@
-# 🔧 Database Issues - Quick Fix
+# Database Query Fix Documentation
 
-เนื่องจากเกิดปัญหา Database schema ไม่ตรงกัน มีวิธีแก้ไขดังนี้:
+## Problem Summary
+The dashboard was failing with console errors for three main database queries:
+- `getUserUsageStats` 
+- `getUserUsage`
+- `getUserApiKeys`
 
-## 🚨 Problem
-```
-Failed query: insert into "api_keys" ... 
-```
+All errors were occurring at the console.error statements in the catch blocks of these functions.
 
-## ✅ Solution Options
+## Root Cause Analysis
+1. **Database Connection Issues**: The database might not be properly connected or accessible
+2. **Missing Tables**: Required tables (users, api_keys, usage_logs, sessions) might not exist in the database
+3. **Schema Mismatch**: The Drizzle schema didn't perfectly match the actual database structure
+4. **Poor Error Handling**: Errors were being logged but not properly handled, causing the components to fail
 
-### Option 1: Manual Database Setup (Recommended)
+## Fixes Implemented
 
-1. **Run the manual SQL script:**
-   ```sql
-   -- Copy และรัน code ใน manual_db_setup.sql ใน database ของคุณ
-   ```
+### 1. Enhanced Database Queries (`src/lib/db/queries.ts`)
+- Added connection testing before each query
+- Added table existence checks
+- Improved error handling to return empty arrays instead of throwing
+- Added proper logging for debugging
+- Created `initializeDatabase()` function for setup
 
-2. **หรือใช้ Drizzle Studio:**
-   ```bash
-   npm run db:studio
-   ```
-   แล้วรันคำสั่ง SQL ใน manual_db_setup.sql
+### 2. Fixed Database Schema (`src/lib/db/schema.ts`)
+- Removed `updatedAt` field from `apiKeys` table (didn't exist in actual DB)
+- Added `name` field to `users` table to match manual_db_setup.sql
+- Ensured all field types match the actual database
 
-### Option 2: Use Simple Setup Endpoint
+### 3. Added Database Health Check API (`src/app/api/admin/db-health/route.ts`)
+- GET endpoint to check database connection and table status
+- POST endpoint to initialize database tables
+- Comprehensive error reporting
 
+### 4. Added Health Check API (`src/app/api/health/route.ts`)
+- Simple API health check endpoint
+
+### 5. Created Database Setup Scripts
+- `scripts/test-db.js` - Test database connection and structure
+- `scripts/init-db.js` - Initialize database tables and indexes
+- Updated `package.json` with new scripts
+
+### 6. Enhanced Error Handling in Components
+The dashboard components now gracefully handle:
+- Empty data arrays
+- Failed database queries
+- Missing tables
+- Connection failures
+
+## Usage Instructions
+
+### Option 1: Using Scripts (Recommended)
 ```bash
-# ใช้ endpoint ใหม่ที่ใช้ SQL โดยตรง
-curl -X POST http://localhost:3000/api/demo/setup-simple \
+# Test database connection
+bun run db:test
+
+# Initialize database
+bun run db:init
+
+# Start the application
+bun dev
+```
+
+### Option 2: Using API Endpoints
+```bash
+# Start the application first
+bun dev
+
+# Check database health
+curl http://localhost:3000/api/admin/db-health
+
+# Initialize database
+curl -X POST http://localhost:3000/api/admin/db-health \
   -H "Content-Type: application/json" \
-  -d '{"email": "demo@example.com", "credits": 1000}'
-```
+  -d '{"action": "initialize"}'
 
-### Option 3: Reset Database (Nuclear Option)
-
-1. **Delete existing migrations:**
-   ```bash
-   rm -rf drizzle/*.sql
-   ```
-
-2. **Generate new migration:**
-   ```bash
-   npm run db:generate
-   ```
-
-3. **Run migration:**
-   ```bash
-   npm run db:migrate
-   ```
-
-## 🧪 Testing After Fix
-
-### 1. Test Health Check
-```bash
+# Check API health
 curl http://localhost:3000/api/health
 ```
 
-### 2. Test Database Connection
-```bash
-# ถ้า database ทำงาน จะไม่ได้ error
-curl http://localhost:3000/api/demo/setup-simple
-```
+### Option 3: Manual SQL Setup
+Run the SQL commands from `manual_db_setup.sql` directly in your database.
 
-### 3. Create Demo User & API Key
-```bash
-curl -X POST http://localhost:3000/api/demo/setup-simple \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "credits": 1000}'
-```
+## Testing the Fix
 
-**Expected Response:**
-```json
-{
-  "success": true,
-  "message": "Demo setup completed successfully!",
-  "user": {
-    "id": "...",
-    "email": "test@example.com", 
-    "credits": 1000
-  },
-  "apiKey": "gis_xxxxxxxxxxxxx..."
-}
-```
+1. **Start the application**: `bun dev`
+2. **Check logs**: Look for `[DB]` prefixed messages in the console
+3. **Visit dashboard**: Go to `/dashboard` (after logging in)
+4. **Verify components**: All dashboard components should load without console errors
 
-### 4. Test API with the Key
-```bash
-# ใช้ API key ที่ได้จากขั้นตอนที่ 3
-curl -X GET http://localhost:3000/api/demo \
-  -H "Authorization: Bearer gis_YOUR_API_KEY_HERE"
-```
+## Expected Behavior After Fix
 
-## 📋 Manual Database Schema
+- ✅ Dashboard loads without console errors
+- ✅ Empty states show "No data available" instead of errors
+- ✅ Database queries return empty arrays when tables don't exist
+- ✅ Connection issues are logged but don't crash the application
+- ✅ Tables are automatically created if they don't exist
 
-หาก database ว่างเปล่า รัน SQL นี้:
-
-```sql
--- Run this in your database
-CREATE TABLE IF NOT EXISTS "users" (
-  "id" text PRIMARY KEY NOT NULL,
-  "email" text UNIQUE NOT NULL,
-  "password_hash" text NOT NULL,
-  "first_name" text NOT NULL,
-  "last_name" text NOT NULL,
-  "credits" integer DEFAULT 1000 NOT NULL,
-  "is_active" boolean DEFAULT true NOT NULL,
-  "email_verified" boolean DEFAULT false NOT NULL,
-  "created_at" timestamp DEFAULT now() NOT NULL,
-  "updated_at" timestamp DEFAULT now() NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS "api_keys" (
-  "id" text PRIMARY KEY NOT NULL,
-  "user_id" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
-  "key_hash" text UNIQUE NOT NULL,
-  "name" text NOT NULL,
-  "is_active" boolean DEFAULT true NOT NULL,
-  "last_used" timestamp,
-  "created_at" timestamp DEFAULT now() NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS "usage_logs" (
-  "id" text PRIMARY KEY NOT NULL,
-  "user_id" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE, 
-  "api_key_id" text NOT NULL REFERENCES "api_keys"("id"),
-  "endpoint" text NOT NULL,
-  "credits_used" integer NOT NULL,
-  "request_data" jsonb,
-  "response_data" jsonb,
-  "processing_time" integer,
-  "status" text NOT NULL,
-  "error_message" text,
-  "created_at" timestamp DEFAULT now() NOT NULL
-);
-```
-
-## 🎯 Quick Commands
+## Available Scripts
 
 ```bash
-# Test new simple setup
-curl -X POST http://localhost:3000/api/demo/setup-simple \
-  -H "Content-Type: application/json" \
-  -d '{"email": "demo@example.com"}'
-
-# Test with result API key
-curl -X GET http://localhost:3000/api/demo \
-  -H "Authorization: Bearer gis_YOUR_KEY"
-
-# Check usage
-curl -X GET http://localhost:3000/api/usage \
-  -H "Authorization: Bearer gis_YOUR_KEY"
+bun run db:test      # Test database connection and structure
+bun run db:init      # Initialize database tables
+bun run db:health    # Check database health via API
+bun run api:health   # Check API health
 ```
 
----
+## Troubleshooting
 
-💡 **Tip:** ใช้ `/api/demo/setup-simple` แทน `/api/demo/setup` หาก migration มีปัญหา
+### If database connection fails:
+1. Check `DATABASE_URL` in `.env`
+2. Ensure database server is running
+3. Check network connectivity
+
+### If tables don't exist:
+1. Run `bun run db:init`
+2. Or use the API: `POST /api/admin/db-health {"action": "initialize"}`
+3. Or run the manual SQL setup
+
+### If dashboard still shows errors:
+1. Check browser console for specific errors
+2. Check server logs for `[DB]` messages
+3. Try refreshing the page after database initialization
+
+## Files Modified/Created
+
+### Modified:
+- `src/lib/db/queries.ts` - Enhanced error handling and connection testing
+- `src/lib/db/schema.ts` - Fixed schema to match actual database
+- `package.json` - Added new database scripts
+
+### Created:
+- `src/app/api/admin/db-health/route.ts` - Database health check API
+- `src/app/api/health/route.ts` - General health check API
+- `scripts/test-db.js` - Database testing script
+- `scripts/init-db.js` - Database initialization script
+- `DATABASE_FIX.md` - This documentation
+
+The fix ensures the dashboard works reliably even when the database is not properly set up, and provides clear paths to resolve any database issues.

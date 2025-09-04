@@ -13,6 +13,8 @@
     "db:studio": "drizzle-kit studio",
     "db:setup": "echo 'Database setup available via API: POST /api/admin/db-health with {\"action\": \"initialize\"}'",
     "db:health": "curl -s http://localhost:3000/api/admin/db-health | jq .",
+    "db:test": "node scripts/test-db.js",
+    "db:init": "node scripts/init-db.js",
     "test": "echo \"API Tests not implemented yet\"",
     "test:api": "echo \"Running API tests...\"",
     "test:api:auth": "echo \"Testing API authentication...\"",
