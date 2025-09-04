@@ -11,7 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:setup": "node -e \"require('./src/lib/db/setup.ts').initializeDatabase()\"",
+    "db:setup": "echo 'Database setup available via API: POST /api/admin/db-health with {\"action\": \"initialize\"}'",
     "db:health": "curl -s http://localhost:3000/api/admin/db-health | jq .",
     "test": "echo \"API Tests not implemented yet\"",
     "test:api": "echo \"Running API tests...\"",

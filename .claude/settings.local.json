@@ -40,7 +40,9 @@
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src/**)",
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db\\auth-db/**)",
-      "Bash(python test:*)"
+      "Bash(python test:*)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)"
     ],
     "deny": [],
     "ask": []

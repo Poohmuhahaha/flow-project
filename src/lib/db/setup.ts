@@ -1,2 +1,176 @@
 // Database Health Check & Setup Script
-import { db } from './index';\nimport { sql } from 'drizzle-orm';\nimport { createId } from '@paralleldrive/cuid2';\n\nexport async function checkDatabaseHealth() {\n  try {\n    console.log('🔍 Checking database connection...');\n    \n    // Test basic connection\n    const result = await db.execute(sql`SELECT 1 as test`);\n    console.log('✅ Database connection successful');\n    \n    // Check if tables exist\n    const tables = await db.execute(sql`\n      SELECT table_name \n      FROM information_schema.tables \n      WHERE table_schema = 'public'\n    `);\n    \n    const tableNames = tables.rows.map(row => row.table_name);\n    console.log('📋 Existing tables:', tableNames);\n    \n    const requiredTables = ['users', 'api_keys', 'usage_logs', 'sessions', 'password_reset_tokens'];\n    const missingTables = requiredTables.filter(table => !tableNames.includes(table));\n    \n    if (missingTables.length > 0) {\n      console.log('❌ Missing tables:', missingTables);\n      return false;\n    }\n    \n    console.log('✅ All required tables exist');\n    return true;\n    \n  } catch (error) {\n    console.error('❌ Database health check failed:', error);\n    return false;\n  }\n}\n\nexport async function setupDatabase() {\n  try {\n    console.log('🛠️ Setting up database...');\n    \n    // Create users table\n    await db.execute(sql`\n      CREATE TABLE IF NOT EXISTS \"users\" (\n        \"id\" text PRIMARY KEY NOT NULL,\n        \"email\" text UNIQUE NOT NULL,\n        \"password_hash\" text NOT NULL,\n        \"first_name\" text NOT NULL,\n        \"last_name\" text NOT NULL,\n        \"company\" text,\n        \"role\" text,\n        \"credits\" integer DEFAULT 1000 NOT NULL,\n        \"is_active\" boolean DEFAULT true NOT NULL,\n        \"created_at\" timestamp DEFAULT now() NOT NULL,\n        \"updated_at\" timestamp DEFAULT now() NOT NULL\n      )\n    `);\n    \n    // Create sessions table\n    await db.execute(sql`\n      CREATE TABLE IF NOT EXISTS \"sessions\" (\n        \"id\" text PRIMARY KEY NOT NULL,\n        \"user_id\" text NOT NULL REFERENCES \"users\"(\"id\") ON DELETE CASCADE,\n        \"token\" text UNIQUE NOT NULL,\n        \"expires_at\" timestamp NOT NULL,\n        \"user_agent\" text,\n        \"ip_address\" text,\n        \"created_at\" timestamp DEFAULT now() NOT NULL\n      )\n    `);\n    \n    // Create password_reset_tokens table\n    await db.execute(sql`\n      CREATE TABLE IF NOT EXISTS \"password_reset_tokens\" (\n        \"id\" text PRIMARY KEY NOT NULL,\n        \"user_id\" text NOT NULL REFERENCES \"users\"(\"id\") ON DELETE CASCADE,\n        \"token\" text UNIQUE NOT NULL,\n        \"expires_at\" timestamp NOT NULL,\n        \"is_used\" boolean DEFAULT false NOT NULL,\n        \"created_at\" timestamp DEFAULT now() NOT NULL\n      )\n    `);\n    \n    // Create api_keys table\n    await db.execute(sql`\n      CREATE TABLE IF NOT EXISTS \"api_keys\" (\n        \"id\" text PRIMARY KEY NOT NULL,\n        \"user_id\" text NOT NULL REFERENCES \"users\"(\"id\") ON DELETE CASCADE,\n        \"key_hash\" text UNIQUE NOT NULL,\n        \"name\" text NOT NULL,\n        \"is_active\" boolean DEFAULT true NOT NULL,\n        \"last_used\" timestamp,\n        \"created_at\" timestamp DEFAULT now() NOT NULL\n      )\n    `);\n    \n    // Create usage_logs table\n    await db.execute(sql`\n      CREATE TABLE IF NOT EXISTS \"usage_logs\" (\n        \"id\" text PRIMARY KEY NOT NULL,\n        \"user_id\" text NOT NULL REFERENCES \"users\"(\"id\") ON DELETE CASCADE,\n        \"api_key_id\" text NOT NULL REFERENCES \"api_keys\"(\"id\"),\n        \"endpoint\" text NOT NULL,\n        \"credits_used\" integer NOT NULL,\n        \"request_data\" jsonb,\n        \"response_data\" jsonb,\n        \"processing_time\" integer,\n        \"status\" text NOT NULL,\n        \"error_message\" text,\n        \"created_at\" timestamp DEFAULT now() NOT NULL\n      )\n    `);\n    \n    // Create indexes\n    await db.execute(sql`CREATE INDEX IF NOT EXISTS \"idx_api_keys_user_id\" ON \"api_keys\" (\"user_id\")`);\n    await db.execute(sql`CREATE INDEX IF NOT EXISTS \"idx_api_keys_key_hash\" ON \"api_keys\" (\"key_hash\")`);\n    await db.execute(sql`CREATE INDEX IF NOT EXISTS \"idx_usage_logs_user_id\" ON \"usage_logs\" (\"user_id\")`);\n    await db.execute(sql`CREATE INDEX IF NOT EXISTS \"idx_usage_logs_api_key_id\" ON \"usage_logs\" (\"api_key_id\")`);\n    await db.execute(sql`CREATE INDEX IF NOT EXISTS \"idx_usage_logs_created_at\" ON \"usage_logs\" (\"created_at\")`);\n    await db.execute(sql`CREATE INDEX IF NOT EXISTS \"idx_sessions_user_id\" ON \"sessions\" (\"user_id\")`);\n    await db.execute(sql`CREATE INDEX IF NOT EXISTS \"idx_sessions_token\" ON \"sessions\" (\"token\")`);\n    \n    console.log('✅ Database setup completed');\n    return true;\n    \n  } catch (error) {\n    console.error('❌ Database setup failed:', error);\n    return false;\n  }\n}\n\nexport async function createDemoUser() {\n  try {\n    console.log('👤 Creating demo user...');\n    \n    const demoUser = {\n      id: createId(),\n      email: 'demo@example.com',\n      password_hash: '$2a$12$demo.hash.for.testing', // จะต้องแก้ไขเป็น hash จริง\n      first_name: 'Demo',\n      last_name: 'User',\n      company: 'Demo Company',\n      credits: 5000\n    };\n    \n    await db.execute(sql`\n      INSERT INTO \"users\" (\"id\", \"email\", \"password_hash\", \"first_name\", \"last_name\", \"company\", \"credits\")\n      VALUES (${demoUser.id}, ${demoUser.email}, ${demoUser.password_hash}, ${demoUser.first_name}, ${demoUser.last_name}, ${demoUser.company}, ${demoUser.credits})\n      ON CONFLICT (\"email\") DO NOTHING\n    `);\n    \n    console.log('✅ Demo user created/updated');\n    return demoUser.id;\n    \n  } catch (error) {\n    console.error('❌ Demo user creation failed:', error);\n    return null;\n  }\n}\n\n// Main function to run all checks and setup\nexport async function initializeDatabase() {\n  console.log('🚀 Initializing database...');\n  \n  const isHealthy = await checkDatabaseHealth();\n  \n  if (!isHealthy) {\n    console.log('🔧 Database needs setup...');\n    await setupDatabase();\n    await checkDatabaseHealth();\n  }\n  \n  // Optional: Create demo user\n  // await createDemoUser();\n  \n  console.log('🎉 Database initialization completed');\n}\n\n// For CLI usage\nif (require.main === module) {\n  initializeDatabase().catch(console.error);\n}\n
+import { db } from './index';
+import { sql } from 'drizzle-orm';
+import { createId } from '@paralleldrive/cuid2';
+
+export async function checkDatabaseHealth() {
+  try {
+    console.log('🔍 Checking database connection...');
+    
+    // Test basic connection
+    const result = await db.execute(sql`SELECT 1 as test`);
+    console.log('✅ Database connection successful');
+    
+    // Check if tables exist
+    const tables = await db.execute(sql`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `);
+    
+    const tableNames = tables.rows.map(row => row.table_name);
+    console.log('📋 Existing tables:', tableNames);
+    
+    const requiredTables = ['users', 'api_keys', 'usage_logs', 'sessions', 'password_reset_tokens'];
+    const missingTables = requiredTables.filter(table => !tableNames.includes(table));
+    
+    if (missingTables.length > 0) {
+      console.log('❌ Missing tables:', missingTables);
+      return false;
+    }
+    
+    console.log('✅ All required tables exist');
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Database health check failed:', error);
+    return false;
+  }
+}
+
+export async function setupDatabase() {
+  try {
+    console.log('🛠️ Setting up database...');
+    
+    // Create users table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS "users" (
+        "id" text PRIMARY KEY NOT NULL,
+        "email" text UNIQUE NOT NULL,
+        "password_hash" text NOT NULL,
+        "first_name" text NOT NULL,
+        "last_name" text NOT NULL,
+        "company" text,
+        "role" text,
+        "credits" integer DEFAULT 1000 NOT NULL,
+        "is_active" boolean DEFAULT true NOT NULL,
+        "created_at" timestamp DEFAULT now() NOT NULL,
+        "updated_at" timestamp DEFAULT now() NOT NULL
+      )
+    `);
+    
+    // Create sessions table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS "sessions" (
+        "id" text PRIMARY KEY NOT NULL,
+        "user_id" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+        "token" text UNIQUE NOT NULL,
+        "expires_at" timestamp NOT NULL,
+        "user_agent" text,
+        "ip_address" text,
+        "created_at" timestamp DEFAULT now() NOT NULL
+      )
+    `);
+    
+    // Create password_reset_tokens table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS "password_reset_tokens" (
+        "id" text PRIMARY KEY NOT NULL,
+        "user_id" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+        "token" text UNIQUE NOT NULL,
+        "expires_at" timestamp NOT NULL,
+        "is_used" boolean DEFAULT false NOT NULL,
+        "created_at" timestamp DEFAULT now() NOT NULL
+      )
+    `);
+    
+    // Create api_keys table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS "api_keys" (
+        "id" text PRIMARY KEY NOT NULL,
+        "user_id" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+        "key_hash" text UNIQUE NOT NULL,
+        "name" text NOT NULL,
+        "is_active" boolean DEFAULT true NOT NULL,
+        "last_used" timestamp,
+        "created_at" timestamp DEFAULT now() NOT NULL
+      )
+    `);
+    
+    // Create usage_logs table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS "usage_logs" (
+        "id" text PRIMARY KEY NOT NULL,
+        "user_id" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+        "api_key_id" text NOT NULL REFERENCES "api_keys"("id"),
+        "endpoint" text NOT NULL,
+        "credits_used" integer NOT NULL,
+        "request_data" jsonb,
+        "response_data" jsonb,
+        "processing_time" integer,
+        "status" text NOT NULL,
+        "error_message" text,
+        "created_at" timestamp DEFAULT now() NOT NULL
+      )
+    `);
+    
+    // Create indexes
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_api_keys_user_id" ON "api_keys" ("user_id")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_api_keys_key_hash" ON "api_keys" ("key_hash")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_usage_logs_user_id" ON "usage_logs" ("user_id")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_usage_logs_api_key_id" ON "usage_logs" ("api_key_id")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_usage_logs_created_at" ON "usage_logs" ("created_at")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_sessions_user_id" ON "sessions" ("user_id")`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_sessions_token" ON "sessions" ("token")`);
+    
+    console.log('✅ Database setup completed');
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Database setup failed:', error);
+    return false;
+  }
+}
+
+export async function createDemoUser() {
+  try {
+    console.log('👤 Creating demo user...');
+    
+    const demoUser = {
+      id: createId(),
+      email: 'demo@example.com',
+      password_hash: '$2a$12$demo.hash.for.testing',
+      first_name: 'Demo',
+      last_name: 'User', 
+      company: 'Demo Company',
+      credits: 5000
+    };
+    
+    await db.execute(sql`
+      INSERT INTO "users" ("id", "email", "password_hash", "first_name", "last_name", "company", "credits")
+      VALUES (${demoUser.id}, ${demoUser.email}, ${demoUser.password_hash}, ${demoUser.first_name}, ${demoUser.last_name}, ${demoUser.company}, ${demoUser.credits})
+      ON CONFLICT ("email") DO NOTHING
+    `);
+    
+    console.log('✅ Demo user created/updated');
+    return demoUser.id;
+    
+  } catch (error) {
+    console.error('❌ Demo user creation failed:', error);
+    return null;
+  }
+}
+
+export async function initializeDatabase() {
+  console.log('🚀 Initializing database...');
+  
+  const isHealthy = await checkDatabaseHealth();
+  
+  if (!isHealthy) {
+    console.log('🔧 Database needs setup...');
+    await setupDatabase();
+    await checkDatabaseHealth();
+  }
+  
+  console.log('🎉 Database initialization completed');
+}
