@@ -15,7 +15,11 @@
 **แก้ไข:** ใช้ `error instanceof Error ? error.message : 'Unknown error'`
 **ไฟล์ที่แก้:** `db-health/route.ts`, `fix-db/route.ts`
 
-### Error 4: npm Script TypeScript Issue
+### Error 4: Missing ESLint & Backup File Issue
+**ปัญหา:** ESLint ไม่มี และมีไฟล์ backup ที่ import function ที่ไม่มี
+**แก้ไข:** สร้าง .eslintrc.json และลบไฟล์ route_backup.ts
+
+### Error 5: npm Script TypeScript Issue
 **ปัญหา:** `db:setup` script ใช้ TypeScript module ที่ build ไม่ได้
 **แก้ไข:** เปลี่ยนเป็น message ที่บอกใช้ API แทน
 
