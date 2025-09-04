@@ -1,4 +1,3 @@
-export const runtime = 'nodejs'
 // lib/db/queries.ts
 import { eq, desc, and, gte, lte, sql } from 'drizzle-orm';
 import { db } from './index';
@@ -36,18 +35,26 @@ export async function updateUserCredits(userId: string, credits: number) {
 
 // API Key queries
 export async function createApiKey(userId: string, name: string) {
-  const rawKey = crypto.randomBytes(32).toString('hex');
-  const fullApiKey = `gis_${rawKey}`;
-  const keyHash = crypto.createHash('sha256').update(fullApiKey).digest('hex');
-  
-  await db.insert(apiKeys).values({
-    id: createId(),
-    userId,
-    keyHash,
-    name,
-  });
-  
-  return fullApiKey; // คืนค่า API key ตัวจริง (แสดงครั้งเดียว)
+  try {
+    console.log('[DB] Creating API key for user:', userId, 'with name:', name);
+    const rawKey = crypto.randomBytes(32).toString('hex');
+    const fullApiKey = `gis_${rawKey}`;
+    const keyHash = crypto.createHash('sha256').update(fullApiKey).digest('hex');
+    
+    console.log('[DB] Generated API key hash, inserting to database...');
+    await db.insert(apiKeys).values({
+      id: createId(),
+      userId,
+      keyHash,
+      name,
+    });
+    
+    console.log('[DB] API key inserted successfully');
+    return fullApiKey; // คืนค่า API key ตัวจริง (แสดงครั้งเดียว)
+  } catch (error) {
+    console.error('[DB] Failed to create API key:', error);
+    throw error;
+  }
 }
 
 export async function updateApiKeyLastUsed(apiKeyId: string) {

@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createApiKey, getUserApiKeys, deleteApiKey } from '@/lib/db/queries';
 import { getServerSession } from '@/lib/db/auth-db/auth-server';
 
+export const runtime = 'nodejs';
+
 // GET - ดึงรายการ API Keys ของผู้ใช้
 export async function GET(request: NextRequest) {
   try {
@@ -34,12 +36,17 @@ export async function GET(request: NextRequest) {
 // POST - สร้าง API Key ใหม่
 export async function POST(request: NextRequest) {
   try {
+    console.log('[API] POST /api/auth/api-keys - Starting request processing');
+    
     const session = await getServerSession(request);
+    console.log('[API] Session result:', session ? 'Found' : 'Not found');
+    
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
+    console.log('[API] Request body:', body);
     const { name } = body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -49,14 +56,19 @@ export async function POST(request: NextRequest) {
     }
 
     // ตรวจสอบจำนวน API keys ที่มีอยู่ (จำกัดไม่เกิน 5 keys ต่อผู้ใช้)
+    console.log('[API] Checking existing keys for user:', session.userId);
     const existingKeys = await getUserApiKeys(session.userId);
+    console.log('[API] Existing keys count:', existingKeys.length);
+    
     if (existingKeys.length >= 5) {
       return NextResponse.json({ 
         error: 'Maximum API keys limit reached (5 keys)' 
       }, { status: 429 });
     }
 
+    console.log('[API] Creating new API key...');
     const apiKey = await createApiKey(session.userId, name.trim());
+    console.log('[API] API key created successfully');
 
     return NextResponse.json({
       success: true,
@@ -66,7 +78,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('API key creation error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error stack:', (error as Error).stack);
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+    }, { status: 500 });
   }
 }
 

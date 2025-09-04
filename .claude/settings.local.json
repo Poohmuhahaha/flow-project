@@ -57,7 +57,13 @@
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\email/**)",
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\reset-password/**)",
       "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\reset-password/**)",
-      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\reset-password/**)"
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\reset-password/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\app\\api\\auth\\api-keys/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db\\auth-db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Read(/C:\\POOHEIEI\\CODDING\\ProjectBase\\FLO(W)\\flow\\src\\lib\\db/**)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
