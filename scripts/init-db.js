@@ -129,7 +129,8 @@ async function initializeDatabase() {
       ORDER BY table_name
     `);
     
-    const tableNames = tables.map(t => t.table_name);
+    const tablesArray = Array.isArray(tables) ? tables : (tables as any).rows || [];
+    const tableNames = tablesArray.map(t => t.table_name);
     console.log('📋 Created tables:', tableNames);
     
     const expectedTables = ['users', 'sessions', 'password_reset_tokens', 'api_keys', 'usage_logs'];

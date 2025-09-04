@@ -20,7 +20,8 @@ async function testDatabase() {
     // Test basic connection
     console.log('🧪 Testing basic connection...');
     const result = await db.execute(sql`SELECT 1 as test, NOW() as timestamp`);
-    console.log('✅ Connection successful:', result[0]);
+    const resultArray = Array.isArray(result) ? result : (result as any).rows || [];
+    console.log('✅ Connection successful:', resultArray[0]);
     
     // Check existing tables
     console.log('📋 Checking existing tables...');
@@ -31,11 +32,12 @@ async function testDatabase() {
       ORDER BY table_name
     `);
     
-    console.log('📊 Found tables:', tables.map(t => t.table_name));
+    const tablesArray = Array.isArray(tables) ? tables : (tables as any).rows || [];
+    console.log('📊 Found tables:', tablesArray.map(t => t.table_name));
     
     // Check if our required tables exist
     const requiredTables = ['users', 'api_keys', 'usage_logs', 'sessions', 'password_reset_tokens'];
-    const existingTables = tables.map(t => t.table_name);
+    const existingTables = tablesArray.map(t => t.table_name);
     const missingTables = requiredTables.filter(table => !existingTables.includes(table));
     
     if (missingTables.length > 0) {
@@ -54,7 +56,8 @@ async function testDatabase() {
         WHERE table_schema = 'public' AND table_name = ${table}
         ORDER BY ordinal_position
       `);
-      console.log(`📋 ${table} columns:`, columns.map(c => `${c.column_name} (${c.data_type})`));
+      const columnsArray = Array.isArray(columns) ? columns : (columns as any).rows || [];
+      console.log(`📋 ${table} columns:`, columnsArray.map(c => `${c.column_name} (${c.data_type})`));
     }
     
     console.log('🎉 Database test completed successfully!');

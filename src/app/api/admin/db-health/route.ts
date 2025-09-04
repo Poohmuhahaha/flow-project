@@ -1,31 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { testDatabaseConnection, checkTablesExist, initializeDatabase } from '@/lib/db/queries';
+import { testDatabaseConnection, checkTablesExist, initializeDatabase, getDatabaseHealth } from '@/lib/db/queries';
 
 export async function GET(request: NextRequest) {
   try {
     console.log('[DB Health] Checking database health...');
     
-    // Test database connection
-    const connectionTest = await testDatabaseConnection();
-    console.log('[DB Health] Connection test:', connectionTest);
-    
-    // Check if tables exist
-    const tablesCheck = await checkTablesExist();
-    console.log('[DB Health] Tables check:', tablesCheck);
-    
-    const healthStatus = {
-      timestamp: new Date().toISOString(),
-      connection: connectionTest,
-      tables: tablesCheck,
-      environment: {
-        nodeEnv: process.env.NODE_ENV,
-        hasDbUrl: !!process.env.DATABASE_URL,
-        dbUrlLength: process.env.DATABASE_URL?.length || 0
-      }
-    };
+    const healthStatus = await getDatabaseHealth();
     
     return NextResponse.json({
-      success: connectionTest.success && tablesCheck.success,
+      success: healthStatus.connection.success && healthStatus.tables.success,
+      timestamp: new Date().toISOString(),
       ...healthStatus
     });
     
@@ -57,7 +41,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: false,
-      error: 'Invalid action'
+      error: 'Invalid action. Use {"action": "initialize"} to setup database'
     }, { status: 400 });
     
   } catch (error) {
