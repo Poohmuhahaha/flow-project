@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { users, apiKeys } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
+import { createId } from '@paralleldrive/cuid2';
 
 // POST - สร้าง demo user และ API key ด้วย Drizzle ORM
 export async function POST(request: NextRequest) {
@@ -39,19 +40,20 @@ export async function POST(request: NextRequest) {
       } else {
         // สร้าง user ใหม่
         const [newUser] = await db.insert(users).values({
+          id: createId(),
           email,
           passwordHash: 'demo_hash',
           firstName: name,
           lastName: 'Demo',
           credits,
-          isActive: true,
-          emailVerified: true
+          isActive: true
         }).returning();
         user = newUser;
       }
 
       // สร้าง API key ใหม่
       await db.insert(apiKeys).values({
+        id: createId(),
         userId: user.id,
         keyHash,
         name: `Demo API Key - ${new Date().toISOString()}`,
