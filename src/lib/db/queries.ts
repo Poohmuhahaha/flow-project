@@ -5,6 +5,26 @@ import { users, apiKeys, usageLogs } from './schema';
 import crypto from 'crypto';
 import { createId } from '@paralleldrive/cuid2';
 
+// Type definitions
+interface DatabaseResult {
+  success: boolean;
+  error?: string;
+}
+
+interface ConnectionResult {
+  success: boolean;
+  result?: any;
+  error?: string;
+}
+
+interface TablesResult {
+  success: boolean;
+  missing?: string[];
+  found?: string[];
+  cached?: boolean;
+  error?: string;
+}
+
 // Global database state tracking
 let dbConnectionState: 'unknown' | 'working' | 'failed' = 'unknown';
 let tablesExistState: 'unknown' | 'exist' | 'missing' = 'unknown';
@@ -22,7 +42,7 @@ async function silentDbOperation<T>(operation: () => Promise<T>, fallback: T): P
 }
 
 // Enhanced database connection test with caching
-export async function testDatabaseConnection(forceCheck = false) {
+export async function testDatabaseConnection(forceCheck = false): Promise<ConnectionResult> {
   const now = Date.now();
   
   // Use cached result if recent and not forcing check
@@ -42,7 +62,7 @@ export async function testDatabaseConnection(forceCheck = false) {
 }
 
 // Enhanced table existence check with caching
-export async function checkTablesExist(forceCheck = false) {
+export async function checkTablesExist(forceCheck = false): Promise<TablesResult> {
   const now = Date.now();
   
   // Use cached result if recent and not forcing check
@@ -319,14 +339,17 @@ export async function getUserUsageStats(userId: string, days = 30) {
 }
 
 // Database initialization function
-export async function initializeDatabase() {
-  return silentDbOperation(async () => {
+export async function initializeDatabase(): Promise<DatabaseResult> {
+  try {
     console.log('[DB] Initializing database...');
     
     // Force check connection
     const connectionTest = await testDatabaseConnection(true);
     if (!connectionTest.success) {
-      throw new Error(`Database connection failed: ${connectionTest.error}`);
+      return {
+        success: false,
+        error: `Database connection failed: ${connectionTest.error}`
+      };
     }
     
     // Create tables if needed
@@ -426,10 +449,13 @@ export async function initializeDatabase() {
     
     console.log('[DB] Database initialization completed successfully');
     return { success: true };
-  }, {
-    success: false,
-    error: 'Database initialization failed'
-  });
+  } catch (error) {
+    console.error('[DB] Database initialization failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Database initialization failed'
+    };
+  }
 }
 
 // Utility functions
