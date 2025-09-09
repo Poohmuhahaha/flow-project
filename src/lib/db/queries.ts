@@ -13,7 +13,8 @@ const CONNECTION_CHECK_INTERVAL = 60000; // 1 minute
 
 // Utility functions
 function logQuery(operation: string, params?: any) {
-  if (process.env.NODE_ENV === 'development') {
+  // Silent in production, minimal logging in development
+  if (process.env.NODE_ENV === 'development' && process.env.DB_VERBOSE_LOGS === 'true') {
     console.log(`[DB] ${operation}:`, params || '');
   }
 }
