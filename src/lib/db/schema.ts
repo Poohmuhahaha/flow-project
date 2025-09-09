@@ -10,7 +10,6 @@ export const users = pgTable('users', {
   lastName: text('last_name').notNull(), 
   company: text('company'),
   role: text('role'),
-  name: text('name'), // เพิ่ม field นี้ตาม manual_db_setup.sql
   credits: integer('credits').default(1000).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),

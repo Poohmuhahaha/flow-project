@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/db/auth-db/auth-utils-server';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 import { ApiKeysSection } from '@/components/dashboard/api-keys-section';
 import { UsageChart } from '@/components/dashboard/usage-chart';
@@ -15,8 +14,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-muted-choice">
-      <DashboardHeader user={user} />
-      
       <main className="container mx-auto py-8 px-4">
         <div className="space-y-8">
           {/* Welcome Section */}

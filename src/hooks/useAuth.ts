@@ -54,26 +54,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      setLoading(true);
+      
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || 'Login failed');
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      setUser(data.user);
+      setLoading(false);
+      
+      router.push('/dashboard');
+      router.refresh();
+    } catch (error) {
+      setLoading(false);
+      throw error;
     }
-
-    setUser(data.user);
-    router.push('/dashboard');
-    router.refresh();
   };
 
   const logout = async () => {
     try {
+      setLoading(true);
+      
       await fetch('/api/auth/logout', { 
         method: 'POST',
         credentials: 'include',
@@ -82,12 +93,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error('Logout error:', error);
     } finally {
       setUser(null);
+      setLoading(false);
+      
+      // Clear any cached session data
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+        sessionStorage.clear();
+      }
+      
       router.push('/login');
       router.refresh();
     }
   };
 
   const refreshUser = async () => {
+    setLoading(true);
     await fetchUser();
   };
 

@@ -1,4 +1,4 @@
-// lib/db/queries.ts - Ultra-robust error handling for production
+// lib/db/queries.ts - COMPLETELY SILENT database operations
 import { eq, desc, and, gte, lte, sql } from 'drizzle-orm';
 import { db } from './index';
 import { users, apiKeys, usageLogs } from './schema';
@@ -11,17 +11,14 @@ let tablesExistState: 'unknown' | 'exist' | 'missing' = 'unknown';
 let lastConnectionCheck = 0;
 const CONNECTION_CHECK_INTERVAL = 60000; // 1 minute
 
-// Utility functions
-function logQuery(operation: string, params?: any) {
-  // Silent in production, minimal logging in development
-  if (process.env.NODE_ENV === 'development' && process.env.DB_VERBOSE_LOGS === 'true') {
-    console.log(`[DB] ${operation}:`, params || '');
+// Silent wrapper for all database operations
+async function silentDbOperation<T>(operation: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    // Completely silent - no logging at all
+    return fallback;
   }
-}
-
-function logError(operation: string, error: any) {
-  // Completely silent - no console logging at all
-  // Only store error info for health checks if needed
 }
 
 // Enhanced database connection test with caching
@@ -33,20 +30,15 @@ export async function testDatabaseConnection(forceCheck = false) {
     return { success: dbConnectionState === 'working' };
   }
   
-  try {
+  return silentDbOperation(async () => {
     const result = await db.execute(sql`SELECT 1 as test`);
     dbConnectionState = 'working';
     lastConnectionCheck = now;
     return { success: true, result };
-  } catch (error) {
-    dbConnectionState = 'failed';
-    lastConnectionCheck = now;
-    logError('Database connection test failed', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    };
-  }
+  }, {
+    success: false,
+    error: 'Connection failed'
+  });
 }
 
 // Enhanced table existence check with caching
@@ -58,7 +50,7 @@ export async function checkTablesExist(forceCheck = false) {
     return { success: tablesExistState === 'exist', cached: true };
   }
   
-  try {
+  return silentDbOperation(async () => {
     const result = await db.execute(sql`
       SELECT table_name 
       FROM information_schema.tables 
@@ -79,37 +71,28 @@ export async function checkTablesExist(forceCheck = false) {
     
     tablesExistState = 'exist';
     return { success: true, found: tableNames };
-  } catch (error) {
-    tablesExistState = 'missing';
-    logError('checkTablesExist failed', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    };
-  }
+  }, {
+    success: false,
+    error: 'Table check failed'
+  });
 }
 
-// Safe database query wrapper
+// Safe database query wrapper - COMPLETELY SILENT
 async function safeDbQuery<T>(
   operation: string,
   queryFn: () => Promise<T>,
   defaultValue: T
 ): Promise<T> {
-  try {
+  return silentDbOperation(async () => {
     // Quick connection check
     const connectionTest = await testDatabaseConnection();
     if (!connectionTest.success) {
-      logError(`${operation}: Database connection failed`, 'Connection unavailable');
       return defaultValue;
     }
 
     // Execute the query
-    const result = await queryFn();
-    return result;
-  } catch (error) {
-    logError(`${operation}: Query failed`, error);
-    return defaultValue;
-  }
+    return await queryFn();
+  }, defaultValue);
 }
 
 // User queries
@@ -148,7 +131,6 @@ export async function updateUserCredits(userId: string, credits: number) {
 // API Key queries
 export async function createApiKey(userId: string, name: string) {
   return safeDbQuery('createApiKey', async () => {
-    logQuery('createApiKey', { userId, name });
     const rawKey = crypto.randomBytes(32).toString('hex');
     const fullApiKey = `gis_${rawKey}`;
     const keyHash = crypto.createHash('sha256').update(fullApiKey).digest('hex');
@@ -197,17 +179,13 @@ export async function createUsageLog(data: {
 
 export async function getUserUsage(userId: string, limit = 100) {
   if (!userId) {
-    logQuery('getUserUsage: userId is required', { userId });
     return [];
   }
 
   return safeDbQuery('getUserUsage', async () => {
-    logQuery('getUserUsage', { userId, limit });
-    
     // Check if usage_logs table exists
     const tablesCheck = await checkTablesExist();
     if (!tablesCheck.success || !tablesCheck.found?.includes('usage_logs')) {
-      logQuery('getUserUsage: usage_logs table does not exist', tablesCheck);
       return [];
     }
     
@@ -218,24 +196,19 @@ export async function getUserUsage(userId: string, limit = 100) {
       .orderBy(desc(usageLogs.createdAt))
       .limit(limit);
     
-    logQuery('getUserUsage success', { count: result?.length || 0 });
     return result || [];
   }, []);
 }
 
 export async function getUserApiKeys(userId: string) {
   if (!userId) {
-    logQuery('getUserApiKeys: userId is required', { userId });
     return [];
   }
 
   return safeDbQuery('getUserApiKeys', async () => {
-    logQuery('getUserApiKeys', { userId });
-    
     // Check if api_keys table exists
     const tablesCheck = await checkTablesExist();
     if (!tablesCheck.success || !tablesCheck.found?.includes('api_keys')) {
-      logQuery('getUserApiKeys: api_keys table does not exist', tablesCheck);
       return [];
     }
     
@@ -245,7 +218,6 @@ export async function getUserApiKeys(userId: string) {
       .where(eq(apiKeys.userId, userId))
       .orderBy(desc(apiKeys.createdAt));
     
-    logQuery('getUserApiKeys success', { count: result?.length || 0 });
     return result || [];
   }, []);
 }
@@ -314,7 +286,6 @@ export async function addCredits(userId: string, amount: number) {
 // Usage analytics
 export async function getUserUsageStats(userId: string, days = 30) {
   if (!userId) {
-    logQuery('getUserUsageStats: userId is required', { userId });
     return [];
   }
 
@@ -322,12 +293,9 @@ export async function getUserUsageStats(userId: string, days = 30) {
   dateFrom.setDate(dateFrom.getDate() - days);
   
   return safeDbQuery('getUserUsageStats', async () => {
-    logQuery('getUserUsageStats', { userId, days, dateFrom });
-    
     // Check if usage_logs table exists
     const tablesCheck = await checkTablesExist();
     if (!tablesCheck.success || !tablesCheck.found?.includes('usage_logs')) {
-      logQuery('getUserUsageStats: usage_logs table does not exist', tablesCheck);
       return [];
     }
     
@@ -346,14 +314,13 @@ export async function getUserUsageStats(userId: string, days = 30) {
       .groupBy(sql`date_trunc('day', created_at)`)
       .orderBy(sql`date_trunc('day', created_at)`);
     
-    logQuery('getUserUsageStats success', { count: result?.length || 0 });
     return result || [];
   }, []);
 }
 
 // Database initialization function
 export async function initializeDatabase() {
-  try {
+  return silentDbOperation(async () => {
     console.log('[DB] Initializing database...');
     
     // Force check connection
@@ -459,16 +426,10 @@ export async function initializeDatabase() {
     
     console.log('[DB] Database initialization completed successfully');
     return { success: true };
-    
-  } catch (error) {
-    console.error('[DB] Database initialization failed:', error);
-    dbConnectionState = 'failed';
-    tablesExistState = 'missing';
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    };
-  }
+  }, {
+    success: false,
+    error: 'Database initialization failed'
+  });
 }
 
 // Utility functions
